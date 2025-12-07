@@ -29,6 +29,9 @@ interface ScheduledPost {
   imageUrl?: string;
   videoUrl?: string;
   predictedCTR?: string;
+  calculatedImpressions?: number;
+  calculatedClicks?: number;
+  calculatedConversions?: number;
 }
 
 interface CachedStrategy {
