@@ -31,7 +31,11 @@ interface AdCardProps {
     mediaType: "image" | "video"
   ) => void;
   onPostEdited: (postId: string, content: string, replyContent: string) => void;
-  onMediaPromptEdited: (postId: string, imagePrompt: string, videoPrompt: string) => void;
+  onMediaPromptEdited: (
+    postId: string,
+    imagePrompt: string,
+    videoPrompt: string
+  ) => void;
 }
 
 export function AdCard({
@@ -51,8 +55,12 @@ export function AdCard({
   const [editedReplyContent, setEditedReplyContent] = useState(
     post.replyContent
   );
-  const [editedImagePrompt, setEditedImagePrompt] = useState(post.imagePrompt || post.mediaPrompt);
-  const [editedVideoPrompt, setEditedVideoPrompt] = useState(post.videoPrompt || post.mediaPrompt);
+  const [editedImagePrompt, setEditedImagePrompt] = useState(
+    post.imagePrompt || post.mediaPrompt
+  );
+  const [editedVideoPrompt, setEditedVideoPrompt] = useState(
+    post.videoPrompt || post.mediaPrompt
+  );
 
   const handleGenerateMedia = async (
     mediaType: "image" | "video",
@@ -62,7 +70,9 @@ export function AdCard({
     setError("");
 
     try {
-      const promptToUse = customPrompt || (mediaType === "image" ? editedImagePrompt : editedVideoPrompt);
+      const promptToUse =
+        customPrompt ||
+        (mediaType === "image" ? editedImagePrompt : editedVideoPrompt);
 
       const endpoint =
         mediaType === "image" ? "/api/generate-image" : "/api/generate-video";
@@ -85,8 +95,10 @@ export function AdCard({
       onMediaGenerated(post.id, mediaUrl, mediaType);
 
       // Save the edited prompts if they were changed
-      if (editedImagePrompt !== (post.imagePrompt || post.mediaPrompt) || 
-          editedVideoPrompt !== (post.videoPrompt || post.mediaPrompt)) {
+      if (
+        editedImagePrompt !== (post.imagePrompt || post.mediaPrompt) ||
+        editedVideoPrompt !== (post.videoPrompt || post.mediaPrompt)
+      ) {
         onMediaPromptEdited(post.id, editedImagePrompt, editedVideoPrompt);
       }
     } catch (err) {
@@ -95,7 +107,7 @@ export function AdCard({
       setIsGenerating(false);
     }
   };
-  
+
   const handleSaveImagePrompt = () => {
     onMediaPromptEdited(post.id, editedImagePrompt, editedVideoPrompt);
     setIsEditingImagePrompt(false);
@@ -301,7 +313,7 @@ export function AdCard({
 
         {/* Image Prompt Section - Collapsible */}
         <details className="space-y-2" open={showImagePrompt}>
-          <summary 
+          <summary
             className="cursor-pointer text-sm font-medium flex items-center gap-2 hover:text-primary"
             onClick={(e) => {
               e.preventDefault();
@@ -357,7 +369,7 @@ export function AdCard({
 
         {/* Video Prompt Section - Collapsible */}
         <details className="space-y-2" open={showVideoPrompt}>
-          <summary 
+          <summary
             className="cursor-pointer text-sm font-medium flex items-center gap-2 hover:text-primary"
             onClick={(e) => {
               e.preventDefault();

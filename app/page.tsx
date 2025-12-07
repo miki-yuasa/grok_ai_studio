@@ -16,17 +16,27 @@ export default function Home() {
       try {
         const parsed = JSON.parse(cachedStrategy);
         // Migrate old mediaUrl to imageUrl/videoUrl based on mediaType
+        // Migrate old mediaPrompt to imagePrompt/videoPrompt
         if (parsed.posts) {
           parsed.posts = parsed.posts.map((post: any) => {
+            const migrated = { ...post };
+            
+            // Migrate mediaUrl
             if (post.mediaUrl && !post.imageUrl && !post.videoUrl) {
-              return {
-                ...post,
-                ...(post.mediaType === "image"
-                  ? { imageUrl: post.mediaUrl }
-                  : { videoUrl: post.mediaUrl }),
-              };
+              if (post.mediaType === "image") {
+                migrated.imageUrl = post.mediaUrl;
+              } else {
+                migrated.videoUrl = post.mediaUrl;
+              }
             }
-            return post;
+            
+            // Migrate mediaPrompt to both image and video prompts if not already set
+            if (post.mediaPrompt && !post.imagePrompt && !post.videoPrompt) {
+              migrated.imagePrompt = post.mediaPrompt;
+              migrated.videoPrompt = post.mediaPrompt;
+            }
+            
+            return migrated;
           });
         }
         setStrategy(parsed);
@@ -91,11 +101,11 @@ export default function Home() {
     });
   };
 
-  const handleMediaPromptEdited = (postId: string, mediaPrompt: string) => {
+  const handleMediaPromptEdited = (postId: string, imagePrompt: string, videoPrompt: string) => {
     if (!strategy) return;
 
     const updatedPosts = strategy.posts.map((post) =>
-      post.id === postId ? { ...post, mediaPrompt } : post
+      post.id === postId ? { ...post, imagePrompt, videoPrompt } : post
     );
 
     setStrategy({

@@ -18,7 +18,11 @@ interface StrategyGridProps {
     mediaType: "image" | "video"
   ) => void;
   onPostEdited: (postId: string, content: string, replyContent: string) => void;
-  onMediaPromptEdited: (postId: string, imagePrompt: string, videoPrompt: string) => void;
+  onMediaPromptEdited: (
+    postId: string,
+    imagePrompt: string,
+    videoPrompt: string
+  ) => void;
 }
 
 export function StrategyGrid({
