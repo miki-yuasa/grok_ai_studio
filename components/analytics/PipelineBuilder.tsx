@@ -26,7 +26,10 @@ import {
   Clock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getAllStoredDataSummaries, formatLastUpdated } from "@/lib/analytics-storage";
+import {
+  getAllStoredDataSummaries,
+  formatLastUpdated,
+} from "@/lib/analytics-storage";
 
 // Node Types
 type NodeType = "source" | "filter" | "combiner" | "output";
@@ -61,11 +64,30 @@ interface PipelineBuilderProps {
   hookData?: string[];
 }
 
-const NODE_COLORS: Record<NodeType, { bg: string; border: string; icon: string }> = {
-  source: { bg: "bg-blue-500", border: "border-blue-400", icon: "text-blue-500" },
-  filter: { bg: "bg-purple-500", border: "border-purple-400", icon: "text-purple-500" },
-  combiner: { bg: "bg-amber-500", border: "border-amber-400", icon: "text-amber-500" },
-  output: { bg: "bg-emerald-500", border: "border-emerald-400", icon: "text-emerald-500" },
+const NODE_COLORS: Record<
+  NodeType,
+  { bg: string; border: string; icon: string }
+> = {
+  source: {
+    bg: "bg-blue-500",
+    border: "border-blue-400",
+    icon: "text-blue-500",
+  },
+  filter: {
+    bg: "bg-purple-500",
+    border: "border-purple-400",
+    icon: "text-purple-500",
+  },
+  combiner: {
+    bg: "bg-amber-500",
+    border: "border-amber-400",
+    icon: "text-amber-500",
+  },
+  output: {
+    bg: "bg-emerald-500",
+    border: "border-emerald-400",
+    icon: "text-emerald-500",
+  },
 };
 
 const SOURCE_ICONS = {
@@ -89,7 +111,9 @@ export default function PipelineBuilder({
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [storedSummaries, setStoredSummaries] = useState<ReturnType<typeof getAllStoredDataSummaries> | null>(null);
+  const [storedSummaries, setStoredSummaries] = useState<ReturnType<
+    typeof getAllStoredDataSummaries
+  > | null>(null);
 
   // Load stored data summaries on mount
   useEffect(() => {
@@ -99,27 +123,27 @@ export default function PipelineBuilder({
 
   // Available data sources with last updated info
   const dataSources = [
-    { 
-      id: "analytics", 
-      name: "Self Analytics", 
-      items: analyticsData, 
-      icon: BarChart3, 
+    {
+      id: "analytics",
+      name: "Self Analytics",
+      items: analyticsData,
+      icon: BarChart3,
       color: "from-blue-500 to-cyan-500",
       lastUpdated: storedSummaries?.analytics.lastUpdated || null,
     },
-    { 
-      id: "trending", 
-      name: "Trending Data", 
-      items: trendingData, 
-      icon: TrendingUp, 
+    {
+      id: "trending",
+      name: "Trending Data",
+      items: trendingData,
+      icon: TrendingUp,
       color: "from-pink-500 to-rose-500",
       lastUpdated: storedSummaries?.trending.lastUpdated || null,
     },
-    { 
-      id: "hooks", 
-      name: "Optimized Hooks", 
-      items: hookData, 
-      icon: Zap, 
+    {
+      id: "hooks",
+      name: "Optimized Hooks",
+      items: hookData,
+      icon: Zap,
       color: "from-amber-500 to-orange-500",
       lastUpdated: storedSummaries?.hooks.lastUpdated || null,
     },
@@ -127,15 +151,35 @@ export default function PipelineBuilder({
 
   // Available node types for palette
   const nodeTemplates = [
-    { type: "filter" as NodeType, name: "LLM Filter", icon: Filter, description: "AI-powered data filtering" },
-    { type: "combiner" as NodeType, name: "Combiner", icon: Combine, description: "Merge multiple sources" },
-    { type: "output" as NodeType, name: "Campaign Output", icon: ArrowRight, description: "Send to campaign creation" },
+    {
+      type: "filter" as NodeType,
+      name: "LLM Filter",
+      icon: Filter,
+      description: "AI-powered data filtering",
+    },
+    {
+      type: "combiner" as NodeType,
+      name: "Combiner",
+      icon: Combine,
+      description: "Merge multiple sources",
+    },
+    {
+      type: "output" as NodeType,
+      name: "Campaign Output",
+      icon: ArrowRight,
+      description: "Send to campaign creation",
+    },
   ];
 
-  const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const generateId = () =>
+    `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   // Add source node from palette
-  const addSourceNode = (sourceType: "analytics" | "trending" | "hooks", x: number, y: number) => {
+  const addSourceNode = (
+    sourceType: "analytics" | "trending" | "hooks",
+    x: number,
+    y: number
+  ) => {
     const source = dataSources.find((s) => s.id === sourceType);
     if (!source) return;
 
@@ -175,7 +219,11 @@ export default function PipelineBuilder({
   };
 
   // Handle drag from palette
-  const handlePaletteDragStart = (e: React.DragEvent, type: string, sourceType?: string) => {
+  const handlePaletteDragStart = (
+    e: React.DragEvent,
+    type: string,
+    sourceType?: string
+  ) => {
     e.dataTransfer.setData("nodeType", type);
     if (sourceType) {
       e.dataTransfer.setData("sourceType", sourceType);
@@ -207,7 +255,7 @@ export default function PipelineBuilder({
   // Node dragging within canvas
   const handleNodeMouseDown = (e: React.MouseEvent, nodeId: string) => {
     if ((e.target as HTMLElement).closest(".port")) return;
-    
+
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
 
@@ -229,7 +277,11 @@ export default function PipelineBuilder({
       const y = e.clientY - rect.top - dragOffset.y;
 
       setNodes((prev) =>
-        prev.map((n) => (n.id === draggingNode ? { ...n, x: Math.max(0, x), y: Math.max(0, y) } : n))
+        prev.map((n) =>
+          n.id === draggingNode
+            ? { ...n, x: Math.max(0, x), y: Math.max(0, y) }
+            : n
+        )
       );
     },
     [draggingNode, dragOffset]
@@ -286,7 +338,9 @@ export default function PipelineBuilder({
   const updateFilterPrompt = (nodeId: string, prompt: string) => {
     setNodes((prev) =>
       prev.map((n) =>
-        n.id === nodeId ? { ...n, data: { ...n.data, filterPrompt: prompt } } : n
+        n.id === nodeId
+          ? { ...n, data: { ...n.data, filterPrompt: prompt } }
+          : n
       )
     );
   };
@@ -351,7 +405,9 @@ export default function PipelineBuilder({
 
       setNodes((prev) =>
         prev.map((n) =>
-          n.id === node.id ? { ...n, data: { ...n.data, isProcessing: true } } : n
+          n.id === node.id
+            ? { ...n, data: { ...n.data, isProcessing: true } }
+            : n
         )
       );
 
@@ -446,16 +502,22 @@ export default function PipelineBuilder({
       } else if (node.type === "output") {
         // Collect all data and export
         const allData = incomingData;
-        
+
         // Categorize data
         let campaignDetails = "";
         let trendContext = "";
         let targetMarket = "";
 
         for (const item of allData) {
-          if (item.toLowerCase().includes("audience") || item.toLowerCase().includes("target")) {
+          if (
+            item.toLowerCase().includes("audience") ||
+            item.toLowerCase().includes("target")
+          ) {
             targetMarket = item;
-          } else if (item.startsWith("#") || item.toLowerCase().includes("trend")) {
+          } else if (
+            item.startsWith("#") ||
+            item.toLowerCase().includes("trend")
+          ) {
             trendContext += (trendContext ? ", " : "") + item;
           } else {
             campaignDetails += (campaignDetails ? "\n• " : "• ") + item;
@@ -465,7 +527,9 @@ export default function PipelineBuilder({
         const payload = {
           targetMarket,
           trendContext,
-          campaignDetails: campaignDetails ? `Based on pipeline analysis:\n${campaignDetails}` : "",
+          campaignDetails: campaignDetails
+            ? `Based on pipeline analysis:\n${campaignDetails}`
+            : "",
         };
 
         localStorage.setItem("strategyBuilderData", JSON.stringify(payload));
@@ -521,7 +585,9 @@ export default function PipelineBuilder({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-medium text-foreground">Pipeline Builder</h2>
+          <h2 className="text-xl font-medium text-foreground">
+            Pipeline Builder
+          </h2>
           <p className="text-sm text-muted-foreground">
             Drag data sources and nodes to build your analytics pipeline
           </p>
@@ -534,7 +600,11 @@ export default function PipelineBuilder({
             </Button>
           )}
           {hasOutput && (
-            <Button onClick={exportToCreate} variant="default" className="gap-2">
+            <Button
+              onClick={exportToCreate}
+              variant="default"
+              className="gap-2"
+            >
               <ArrowRight className="h-4 w-4" />
               Create Campaign
             </Button>
@@ -561,18 +631,25 @@ export default function PipelineBuilder({
                   <div
                     key={source.id}
                     draggable={hasData}
-                    onDragStart={(e) => handlePaletteDragStart(e, "source", source.id)}
+                    onDragStart={(e) =>
+                      handlePaletteDragStart(e, "source", source.id)
+                    }
                     className={`
                       flex items-center gap-3 p-3 rounded-lg border transition-all
-                      ${hasData
-                        ? "cursor-grab active:cursor-grabbing border-border hover:border-primary/50 hover:shadow-sm bg-gradient-to-r " + source.color + " text-white"
-                        : "cursor-not-allowed border-dashed border-border bg-muted/30 opacity-50"
+                      ${
+                        hasData
+                          ? "cursor-grab active:cursor-grabbing border-border hover:border-primary/50 hover:shadow-sm bg-gradient-to-r " +
+                            source.color +
+                            " text-white"
+                          : "cursor-not-allowed border-dashed border-border bg-muted/30 opacity-50"
                       }
                     `}
                   >
                     <Icon className="h-4 w-4" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{source.name}</p>
+                      <p className="text-sm font-medium truncate">
+                        {source.name}
+                      </p>
                       <p className="text-xs opacity-80">
                         {hasData ? `${source.items.length} items` : "No data"}
                       </p>
@@ -604,18 +681,28 @@ export default function PipelineBuilder({
                   <div
                     key={template.type}
                     draggable
-                    onDragStart={(e) => handlePaletteDragStart(e, template.type)}
+                    onDragStart={(e) =>
+                      handlePaletteDragStart(e, template.type)
+                    }
                     className={`
                       flex items-center gap-3 p-3 rounded-lg border cursor-grab active:cursor-grabbing
                       border-border hover:border-primary/50 hover:shadow-sm bg-card transition-all
                     `}
                   >
-                    <div className={`p-1.5 rounded-md ${NODE_COLORS[template.type].bg}`}>
+                    <div
+                      className={`p-1.5 rounded-md ${
+                        NODE_COLORS[template.type].bg
+                      }`}
+                    >
                       <Icon className="h-3.5 w-3.5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{template.name}</p>
-                      <p className="text-xs text-muted-foreground">{template.description}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {template.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {template.description}
+                      </p>
                     </div>
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                   </div>
@@ -636,12 +723,25 @@ export default function PipelineBuilder({
               setConnectingFrom(null);
             }}
             className="relative rounded-2xl border-2 border-dashed border-border bg-gradient-to-br from-background to-muted/20 min-h-[500px] overflow-hidden"
-            style={{ backgroundImage: "radial-gradient(circle, hsl(var(--border)) 1px, transparent 1px)", backgroundSize: "20px 20px" }}
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, hsl(var(--border)) 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
+            }}
           >
             {/* Connection Lines */}
-            <svg className="absolute inset-0 pointer-events-none" style={{ overflow: "visible" }}>
+            <svg
+              className="absolute inset-0 pointer-events-none"
+              style={{ overflow: "visible" }}
+            >
               <defs>
-                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient
+                  id="connectionGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
                   <stop offset="0%" stopColor="rgb(139, 92, 246)" />
                   <stop offset="100%" stopColor="rgb(16, 185, 129)" />
                 </linearGradient>
@@ -694,10 +794,28 @@ export default function PipelineBuilder({
                     ${node.data.isProcessing ? "animate-pulse" : ""}
                     ${node.data.isComplete ? colors.border : "border-border"}
                   `}
-                  style={{ left: node.x, top: node.y, cursor: draggingNode === node.id ? "grabbing" : "grab" }}
+                  style={{
+                    left: node.x,
+                    top: node.y,
+                    cursor: draggingNode === node.id ? "grabbing" : "grab",
+                  }}
                 >
                   {/* Header */}
-                  <div className={`flex items-center gap-2 p-3 rounded-t-xl ${node.data.isComplete ? `bg-gradient-to-r ${node.type === "source" ? "from-blue-500/10" : node.type === "filter" ? "from-purple-500/10" : node.type === "combiner" ? "from-amber-500/10" : "from-emerald-500/10"} to-transparent` : ""}`}>
+                  <div
+                    className={`flex items-center gap-2 p-3 rounded-t-xl ${
+                      node.data.isComplete
+                        ? `bg-gradient-to-r ${
+                            node.type === "source"
+                              ? "from-blue-500/10"
+                              : node.type === "filter"
+                              ? "from-purple-500/10"
+                              : node.type === "combiner"
+                              ? "from-amber-500/10"
+                              : "from-emerald-500/10"
+                          } to-transparent`
+                        : ""
+                    }`}
+                  >
                     <div className={`p-1.5 rounded-md ${colors.bg}`}>
                       {node.data.isProcessing ? (
                         <Loader2 className="h-3.5 w-3.5 text-white animate-spin" />
@@ -708,9 +826,14 @@ export default function PipelineBuilder({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{node.data.name}</p>
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {node.data.name}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        {node.data.filteredItems?.length || node.data.items?.length || 0} items
+                        {node.data.filteredItems?.length ||
+                          node.data.items?.length ||
+                          0}{" "}
+                        items
                       </p>
                     </div>
                     <Button
@@ -732,7 +855,9 @@ export default function PipelineBuilder({
                       <Textarea
                         placeholder="Filter prompt (e.g., 'Keep only items about engagement')"
                         value={node.data.filterPrompt || ""}
-                        onChange={(e) => updateFilterPrompt(node.id, e.target.value)}
+                        onChange={(e) =>
+                          updateFilterPrompt(node.id, e.target.value)
+                        }
                         className="text-xs min-h-[60px] resize-none"
                         onClick={(e) => e.stopPropagation()}
                       />
@@ -742,7 +867,11 @@ export default function PipelineBuilder({
                   {/* Ports */}
                   {node.type !== "source" && (
                     <div
-                      className={`port absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 bg-card cursor-pointer hover:scale-125 transition-transform ${connectingFrom ? "ring-2 ring-primary animate-pulse" : "border-muted-foreground"}`}
+                      className={`port absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 bg-card cursor-pointer hover:scale-125 transition-transform ${
+                        connectingFrom
+                          ? "ring-2 ring-primary animate-pulse"
+                          : "border-muted-foreground"
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePortClick(node.id, "input");
@@ -751,7 +880,11 @@ export default function PipelineBuilder({
                   )}
                   {node.type !== "output" && (
                     <div
-                      className={`port absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 cursor-pointer hover:scale-125 transition-transform ${connectingFrom === node.id ? "bg-primary border-primary" : "bg-card border-muted-foreground"}`}
+                      className={`port absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 cursor-pointer hover:scale-125 transition-transform ${
+                        connectingFrom === node.id
+                          ? "bg-primary border-primary"
+                          : "bg-card border-muted-foreground"
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePortClick(node.id, "output");
@@ -769,9 +902,12 @@ export default function PipelineBuilder({
                   <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
                     <Plus className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <p className="text-lg font-medium text-foreground mb-1">Start Building</p>
+                  <p className="text-lg font-medium text-foreground mb-1">
+                    Start Building
+                  </p>
                   <p className="text-sm text-muted-foreground max-w-xs">
-                    Drag data sources and processing nodes from the left panel to build your pipeline
+                    Drag data sources and processing nodes from the left panel
+                    to build your pipeline
                   </p>
                 </div>
               </div>
@@ -790,7 +926,9 @@ export default function PipelineBuilder({
       {/* Selected Node Details */}
       {selectedNode && (
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="text-sm font-medium text-foreground mb-3">Node Details</h3>
+          <h3 className="text-sm font-medium text-foreground mb-3">
+            Node Details
+          </h3>
           {(() => {
             const node = nodes.find((n) => n.id === selectedNode);
             if (!node) return null;
@@ -801,14 +939,21 @@ export default function PipelineBuilder({
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{node.type}</Badge>
-                  <span className="text-sm text-foreground">{node.data.name}</span>
+                  <span className="text-sm text-foreground">
+                    {node.data.name}
+                  </span>
                 </div>
                 {items && items.length > 0 && (
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Data Preview:</p>
+                    <p className="text-xs text-muted-foreground">
+                      Data Preview:
+                    </p>
                     <div className="max-h-32 overflow-y-auto space-y-1">
                       {items.slice(0, 5).map((item, i) => (
-                        <p key={i} className="text-xs text-foreground bg-muted/50 p-2 rounded">
+                        <p
+                          key={i}
+                          className="text-xs text-foreground bg-muted/50 p-2 rounded"
+                        >
                           {item.substring(0, 100)}...
                         </p>
                       ))}
@@ -851,4 +996,3 @@ export default function PipelineBuilder({
     </div>
   );
 }
-

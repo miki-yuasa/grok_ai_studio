@@ -1,6 +1,6 @@
 /**
  * Simple database layer for storing scheduled posts
- * 
+ *
  * For production, replace this with a proper database (PostgreSQL, MongoDB, etc.)
  * This implementation uses JSON file storage for simplicity
  */
@@ -49,10 +49,10 @@ export async function getAllScheduledPosts(): Promise<ScheduledPost[]> {
 export async function saveScheduledPost(post: ScheduledPost): Promise<void> {
   await ensureDataDir();
   const posts = await getAllScheduledPosts();
-  
+
   // Check if post already exists (by id)
   const existingIndex = posts.findIndex((p) => p.id === post.id);
-  
+
   if (existingIndex >= 0) {
     // Update existing post
     posts[existingIndex] = post;
@@ -60,7 +60,7 @@ export async function saveScheduledPost(post: ScheduledPost): Promise<void> {
     // Add new post
     posts.push(post);
   }
-  
+
   await fs.writeFile(DB_FILE, JSON.stringify(posts, null, 2), "utf-8");
 }
 
@@ -70,12 +70,10 @@ export async function saveScheduledPost(post: ScheduledPost): Promise<void> {
 export async function getDuePosts(): Promise<ScheduledPost[]> {
   const posts = await getAllScheduledPosts();
   const now = new Date().toISOString();
-  
+
   return posts.filter(
     (post) =>
-      post.scheduledTime <= now &&
-      post.status !== "posted" &&
-      post.content // Must have content to post
+      post.scheduledTime <= now && post.status !== "posted" && post.content // Must have content to post
   );
 }
 
@@ -89,7 +87,7 @@ export async function updatePostStatus(
 ): Promise<void> {
   const posts = await getAllScheduledPosts();
   const post = posts.find((p) => p.id === postId);
-  
+
   if (post) {
     post.status = status;
     if (postedAt) {
