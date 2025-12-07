@@ -48,13 +48,19 @@ export default function DashboardPage() {
         const parsed = JSON.parse(cachedStrategy);
         if (parsed.posts) {
           setPosts(parsed.posts);
-          
+
           // Calculate stats
           const total = parsed.posts.length;
-          const draft = parsed.posts.filter((p: ScheduledPost) => p.status === "draft").length;
-          const generated = parsed.posts.filter((p: ScheduledPost) => p.status === "generated").length;
-          const posted = parsed.posts.filter((p: ScheduledPost) => p.status === "posted").length;
-          
+          const draft = parsed.posts.filter(
+            (p: ScheduledPost) => p.status === "draft"
+          ).length;
+          const generated = parsed.posts.filter(
+            (p: ScheduledPost) => p.status === "generated"
+          ).length;
+          const posted = parsed.posts.filter(
+            (p: ScheduledPost) => p.status === "posted"
+          ).length;
+
           setStats({ total, draft, generated, posted });
         }
       } catch (error) {
@@ -80,7 +86,9 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-medium text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome to your campaign overview</p>
+          <p className="text-muted-foreground">
+            Welcome to your campaign overview
+          </p>
         </div>
         <Link href="/create">
           <Button className="rounded-full">
@@ -97,17 +105,19 @@ export default function DashboardPage() {
           AI-Powered Marketing
         </div>
         <h2 className="mb-2 text-xl font-medium text-foreground">
-          {posts.length > 0 ? "Your campaigns are ready" : "Create your first campaign"}
+          {posts.length > 0
+            ? "Your campaigns are ready"
+            : "Create your first campaign"}
         </h2>
         <p className="mb-4 text-muted-foreground">
-          {posts.length > 0 
+          {posts.length > 0
             ? "Manage and monitor your ad campaigns from this dashboard"
-            : "Get started by creating an AI-powered ad campaign for X (Twitter)"
-          }
+            : "Get started by creating an AI-powered ad campaign for X (Twitter)"}
         </p>
         <Link href="/create">
           <button className="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-            {posts.length > 0 ? "Create another campaign" : "Get started"} <ArrowRight className="h-4 w-4" />
+            {posts.length > 0 ? "Create another campaign" : "Get started"}{" "}
+            <ArrowRight className="h-4 w-4" />
           </button>
         </Link>
       </div>
@@ -115,25 +125,37 @@ export default function DashboardPage() {
       {/* Stats overview */}
       <div>
         <div className="mb-4 flex items-center gap-3">
-          <h3 className="text-lg font-medium text-foreground">Campaign Overview</h3>
+          <h3 className="text-lg font-medium text-foreground">
+            Campaign Overview
+          </h3>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="mb-1 text-sm text-muted-foreground">Total Campaigns</p>
-            <p className="text-2xl font-semibold text-foreground">{stats.total}</p>
+            <p className="mb-1 text-sm text-muted-foreground">
+              Total Campaigns
+            </p>
+            <p className="text-2xl font-semibold text-foreground">
+              {stats.total}
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="mb-1 text-sm text-muted-foreground">Drafts</p>
-            <p className="text-2xl font-semibold text-amber-600">{stats.draft}</p>
+            <p className="text-2xl font-semibold text-amber-600">
+              {stats.draft}
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="mb-1 text-sm text-muted-foreground">Ready to Post</p>
-            <p className="text-2xl font-semibold text-blue-600">{stats.generated}</p>
+            <p className="text-2xl font-semibold text-blue-600">
+              {stats.generated}
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="mb-1 text-sm text-muted-foreground">Posted</p>
-            <p className="text-2xl font-semibold text-emerald-600">{stats.posted}</p>
+            <p className="text-2xl font-semibold text-emerald-600">
+              {stats.posted}
+            </p>
           </div>
         </div>
       </div>
@@ -142,7 +164,9 @@ export default function DashboardPage() {
       {posts.length > 0 && (
         <div className="rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-6 py-4">
-            <h2 className="text-lg font-medium text-foreground">Campaign Posts</h2>
+            <h2 className="text-lg font-medium text-foreground">
+              Campaign Posts
+            </h2>
             <p className="text-sm text-muted-foreground">
               Manage and monitor your scheduled posts
             </p>
@@ -151,15 +175,29 @@ export default function DashboardPage() {
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground">Status</TableHead>
-                <TableHead className="text-muted-foreground">Scheduled</TableHead>
+                <TableHead className="text-muted-foreground">
+                  Scheduled
+                </TableHead>
                 <TableHead className="text-muted-foreground">Content</TableHead>
                 <TableHead className="text-muted-foreground">Media</TableHead>
-                <TableHead className="text-muted-foreground text-right">Pred. Impressions</TableHead>
-                <TableHead className="text-muted-foreground text-right">Pred. Clicks</TableHead>
-                <TableHead className="text-muted-foreground text-right">Pred. Conversions</TableHead>
-                <TableHead className="text-muted-foreground text-right">Pred. CTR</TableHead>
-                <TableHead className="text-muted-foreground text-right">Pred. CPM</TableHead>
-                <TableHead className="text-muted-foreground text-right">Pred. CVR</TableHead>
+                <TableHead className="text-muted-foreground text-right">
+                  Pred. Impressions
+                </TableHead>
+                <TableHead className="text-muted-foreground text-right">
+                  Pred. Clicks
+                </TableHead>
+                <TableHead className="text-muted-foreground text-right">
+                  Pred. Conversions
+                </TableHead>
+                <TableHead className="text-muted-foreground text-right">
+                  Pred. CTR
+                </TableHead>
+                <TableHead className="text-muted-foreground text-right">
+                  Pred. CPM
+                </TableHead>
+                <TableHead className="text-muted-foreground text-right">
+                  Pred. CVR
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,8 +207,12 @@ export default function DashboardPage() {
                   className="border-border hover:bg-muted/50 cursor-pointer"
                 >
                   <TableCell>
-                    <Badge variant="outline" className={statusColors[post.status]}>
-                      {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+                    <Badge
+                      variant="outline"
+                      className={statusColors[post.status]}
+                    >
+                      {post.status.charAt(0).toUpperCase() +
+                        post.status.slice(1)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
@@ -183,7 +225,11 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-1">
                       {post.imageUrl && (
                         <div className="h-8 w-8 rounded bg-muted overflow-hidden">
-                          <img src={post.imageUrl} alt="" className="h-full w-full object-cover" />
+                          <img
+                            src={post.imageUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                       )}
                       {post.videoUrl && (
@@ -197,13 +243,19 @@ export default function DashboardPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
-                    {post.calculatedImpressions ? formatNumber(post.calculatedImpressions) : "—"}
+                    {post.calculatedImpressions
+                      ? formatNumber(post.calculatedImpressions)
+                      : "—"}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
-                    {post.calculatedClicks ? formatNumber(post.calculatedClicks) : "—"}
+                    {post.calculatedClicks
+                      ? formatNumber(post.calculatedClicks)
+                      : "—"}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
-                    {post.calculatedConversions ? post.calculatedConversions.toFixed(1) : "—"}
+                    {post.calculatedConversions
+                      ? post.calculatedConversions.toFixed(1)
+                      : "—"}
                   </TableCell>
                   <TableCell className="text-right font-medium text-foreground">
                     {post.predictedCTR || "—"}
@@ -225,7 +277,9 @@ export default function DashboardPage() {
       {posts.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
           <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-medium text-foreground mb-2">No campaigns yet</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            No campaigns yet
+          </h3>
           <p className="text-muted-foreground mb-4">
             Create your first AI-powered ad campaign to get started
           </p>
