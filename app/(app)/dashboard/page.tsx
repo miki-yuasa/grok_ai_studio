@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import Link from "next/link";
 import { formatNumber } from "@/lib/metrics";
+import { PostPreviewDialog } from "@/components/dashboard/PostPreviewDialog";
 
 interface ScheduledPost {
   id: string;
@@ -50,6 +51,8 @@ export default function DashboardPage() {
     generated: 0,
     posted: 0,
   });
+  const [previewPost, setPreviewPost] = useState<ScheduledPost | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     // Load posts from localStorage
@@ -361,6 +364,10 @@ export default function DashboardPage() {
                 <TableRow
                   key={post.id}
                   className="border-border hover:bg-muted/50 cursor-pointer"
+                  onClick={() => {
+                    setPreviewPost(post);
+                    setIsPreviewOpen(true);
+                  }}
                 >
                   <TableCell>
                     <Badge
@@ -447,6 +454,16 @@ export default function DashboardPage() {
           </Link>
         </div>
       )}
+
+      {/* Post Preview Dialog */}
+      <PostPreviewDialog
+        post={previewPost}
+        isOpen={isPreviewOpen}
+        onClose={() => {
+          setIsPreviewOpen(false);
+          setPreviewPost(null);
+        }}
+      />
     </div>
   );
 }
