@@ -31,6 +31,51 @@ export async function generateWithGrok(
 }
 
 /**
+ * Generate text using Grok with vision support (images + text)
+ */
+export async function generateWithGrokVision(
+  systemPrompt: string,
+  userPrompt: string,
+  images: string[] = [],
+  temperature: number = 0.7
+): Promise<string> {
+  // Build content array with images and text
+  const userContent: Array<{
+    type: "text" | "image_url";
+    text?: string;
+    image_url?: { url: string; detail: "high" | "low" | "auto" };
+  }> = [];
+
+  // Add images first
+  for (const imageData of images) {
+    userContent.push({
+      type: "image_url",
+      image_url: {
+        url: imageData, // Already in base64 format from frontend
+        detail: "high",
+      },
+    });
+  }
+
+  // Add text prompt
+  userContent.push({
+    type: "text",
+    text: userPrompt,
+  });
+
+  const completion = await grokClient.chat.completions.create({
+    model: "grok-4",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userContent as any },
+    ],
+    temperature,
+  });
+
+  return completion.choices[0]?.message?.content || "";
+}
+
+/**
  * Generate image using Grok Imagine API
  * Uses high quality for best ad results
  */
@@ -74,15 +119,21 @@ Your goal is to take a product and a set of market conditions and generate a hig
 
 ### YOUR INPUTS:
 1. **Product/Company:** URL or description of what is being advertised.
-2. **Competitor/Context:** Handles or recent activity of competitors (may be auto-discovered from X API).
-3. **Trend Data:** A summary of what is currently viral or trending on X/TikTok (may include real-time trending topics).
+2. **Target Market/Audience:** Specific demographics, interests, and behaviors of the target audience (if provided).
+3. **Campaign Details:** Specific campaign goals, context, and objectives (if provided).
+4. **Competitor/Context:** Handles or recent activity of competitors (may be auto-discovered from X API).
+5. **Trend Data:** A summary of what is currently viral or trending on X/TikTok (may include real-time trending topics).
+6. **Supplementary Images:** Product/service images for visual analysis (if provided).
 
 ### YOUR TASKS:
-1. **Analyze:** Synthesize the product's value prop with the provided trend data.
-2. **Strategize:** Create a sequence of 5-7 posts (ads) spread over a timeline.
-3. **Justify:** For EVERY post, you must provide a "Reasoning Chain" and a "Predicted CTR".
-   - *Reasoning Chain:* Explain WHY this specific angle works. Connect a specific trend to a product feature.
-   - *Predicted CTR:* Estimate a click-through rate (e.g., "2.4%") based on historical engagement for this topic.
+1. **Analyze:** Synthesize ALL provided information including target audience, campaign details, product features, trend data, and visual assets.
+2. **Strategize:** Create a sequence of 5-7 posts (ads) spread over a timeline that DIRECTLY addresses the specified target market and campaign objectives.
+3. **Strategy Summary:** Create a 2-sentence overview that EXPLICITLY mentions the target audience (if provided), campaign goals (if provided), and the core campaign angle. Make it clear how the strategy aligns with the user's specific requirements.
+4. **Justify:** For EVERY post, you must provide detailed rationales for ALL predicted metrics.
+   - *Reasoning Chain (rationale):* Explain WHY this specific angle works. Connect trends to product features AND target audience preferences. MUST also include your reasoning for the predicted CTR, CPM, and CVR estimates.
+   - *Predicted CTR:* Estimate a click-through rate (e.g., "2.4%") with explanation of what factors influenced this estimate.
+   - *Predicted CPM:* Estimate the cost per 1000 impressions with explanation of market conditions and competition.
+   - *Predicted CVR:* Estimate the conversion rate with explanation of audience intent and offer strength.
 
 ### CRITICAL RULES (DO NOT IGNORE):
 - **Native Feel:** The main post content must NOT look like a traditional ad. It should be engaging, meme-centric, or thought-provoking.

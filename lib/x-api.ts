@@ -1,6 +1,9 @@
 /**
- * X (Twitter) API utilities for competitor discovery and trend analysis
+ * X  API utilities for competitor discovery, trend analysis, and posting
  */
+
+import OAuth from "oauth-1.0a";
+import crypto from "crypto";
 
 interface XUser {
   id: string;
@@ -202,5 +205,183 @@ export async function getTrendingTopics(limit: number = 10): Promise<string[]> {
   } catch (error) {
     console.error("Error fetching trends:", error);
     return [];
+  }
+}
+
+/**
+ * Get OAuth 1.0a instance for X API
+ */
+function getOAuth(): OAuth {
+  const apiKey = process.env.X_API_KEY;
+  const apiSecret = process.env.X_API_SECRET;
+
+  if (!apiKey || !apiSecret) {
+    throw new Error("X_API_KEY and X_API_SECRET must be configured");
+  }
+
+  return new OAuth({
+    consumer: {
+      key: apiKey,
+      secret: apiSecret,
+    },
+    signature_method: "HMAC-SHA1",
+    hash_function(baseString, key) {
+      return crypto.createHmac("sha1", key).update(baseString).digest("base64");
+    },
+  });
+}
+
+/**
+ * Post a tweet to X
+ * Requires OAuth 1.0a authentication with API keys
+ */
+export async function postTweet(
+  text: string,
+  mediaIds?: string[],
+  replyToTweetId?: string
+): Promise<{ id: string; text: string }> {
+  const apiKey = process.env.X_API_KEY;
+  const apiSecret = process.env.X_API_SECRET;
+  const accessToken = process.env.X_ACCESS_TOKEN;
+  const accessTokenSecret = process.env.X_ACCESS_TOKEN_SECRET;
+
+  // Check if we have OAuth credentials (required for posting)
+  if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
+    throw new Error(
+      "X API OAuth credentials not configured. Posting requires X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, and X_ACCESS_TOKEN_SECRET environment variables."
+    );
+  }
+
+  try {
+    const oauth = getOAuth();
+    const url = "https://api.x.com/2/tweets";
+
+    const payload: any = {
+      text: text.substring(0, 280), // X character limit
+    };
+
+    if (mediaIds && mediaIds.length > 0) {
+      payload.media = {
+        media_ids: mediaIds,
+      };
+    }
+
+    if (replyToTweetId) {
+      payload.reply = {
+        in_reply_to_tweet_id: replyToTweetId,
+      };
+    }
+
+    // Generate OAuth 1.0a authorization header
+    const requestData = {
+      url,
+      method: "POST",
+    };
+
+    const token = {
+      key: accessToken,
+      secret: accessTokenSecret,
+    };
+
+    const authHeader = oauth.toHeader(
+      oauth.authorize(requestData, token)
+    ).Authorization;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({
+        detail: response.statusText,
+      }));
+      throw new Error(
+        errorData.detail || `Failed to post tweet: ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return {
+      id: data.data.id,
+      text: data.data.text,
+    };
+  } catch (error) {
+    console.error("Error posting tweet:", error);
+    throw error;
+  }
+}
+
+/**
+ * Upload media to X  and return media_id
+ * Required before posting tweets with images/videos
+ */
+export async function uploadMedia(
+  mediaUrl: string,
+  mediaType: "image" | "video"
+): Promise<string> {
+  const apiKey = process.env.X_API_KEY;
+  const apiSecret = process.env.X_API_SECRET;
+  const accessToken = process.env.X_ACCESS_TOKEN;
+  const accessTokenSecret = process.env.X_ACCESS_TOKEN_SECRET;
+
+  if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
+    throw new Error("X API OAuth credentials not configured for media upload.");
+  }
+
+  try {
+    const oauth = getOAuth();
+    const url = "https://upload.x.com/1.1/media/upload.json";
+
+    // First, download the media from the URL
+    const mediaResponse = await fetch(mediaUrl);
+    if (!mediaResponse.ok) {
+      throw new Error(`Failed to download media from ${mediaUrl}`);
+    }
+
+    const mediaBuffer = await mediaResponse.arrayBuffer();
+    const mediaBase64 = Buffer.from(mediaBuffer).toString("base64");
+
+    // Generate OAuth 1.0a authorization header
+    const requestData = {
+      url,
+      method: "POST",
+    };
+
+    const token = {
+      key: accessToken,
+      secret: accessTokenSecret,
+    };
+
+    const authHeader = oauth.toHeader(
+      oauth.authorize(requestData, token)
+    ).Authorization;
+
+    // Upload to X media endpoint
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: authHeader,
+      },
+      body: new URLSearchParams({
+        media_data: mediaBase64,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to upload media: ${errorData}`);
+    }
+
+    const data = await response.json();
+    return data.media_id_string;
+  } catch (error) {
+    console.error("Error uploading media:", error);
+    throw error;
   }
 }

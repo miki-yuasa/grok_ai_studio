@@ -1,16 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateWithGrok, STRATEGY_SYSTEM_PROMPT } from "@/lib/grok";
+import {
+  generateWithGrok,
+  generateWithGrokVision,
+  STRATEGY_SYSTEM_PROMPT,
+} from "@/lib/grok";
 import { AdStrategy, StrategyRequest } from "@/lib/types";
 import { discoverCompetitors, getTrendingTopics } from "@/lib/x-api";
+import { calculateCampaignMetrics } from "@/lib/metrics";
 
 export async function POST(request: NextRequest) {
   try {
     const body: StrategyRequest = await request.json();
-    let { productUrl, competitorHandles, trendContext } = body;
+    let {
+      productUrl,
+      budget,
+      competitorHandles,
+      trendContext,
+      targetMarket,
+      campaignDetails,
+      supplementaryImages,
+    } = body;
 
     if (!productUrl) {
       return NextResponse.json(
         { error: "Product URL is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!budget || budget <= 0) {
+      return NextResponse.json(
+        { error: "Valid budget is required" },
         { status: 400 }
       );
     }
@@ -50,9 +70,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Build the user prompt
-    const userPrompt = `Generate a comprehensive viral marketing strategy for X (Twitter) with the following parameters:
+    const userPrompt = `Generate a comprehensive viral marketing strategy for X  with the following parameters:
 
 Product/Company URL: ${productUrl}
+Campaign Budget: $${budget.toLocaleString()} USD
+${
+  targetMarket
+    ? `Target Market/Audience: ${targetMarket}`
+    : "Target Market/Audience: Analyze and determine the best target audience"
+}
+${
+  campaignDetails
+    ? `Campaign Details: ${campaignDetails}`
+    : "Campaign Details: Design an engaging viral campaign"
+}
 ${
   competitorHandles
     ? `Competitor Handles (${
@@ -67,32 +98,53 @@ ${
     ? `Current Trend Context: ${trendContext}`
     : "Current Trend Context: Analyze current viral trends on X"
 }
+${budget ? `Campaign Budget: $${budget} USD` : "Campaign Budget: Not specified"}
+${
+  supplementaryImages && supplementaryImages.length > 0
+    ? `\n\nSupplementary Images: ${supplementaryImages.length} product/service image(s) have been provided above. Analyze these images to understand the product's visual identity, features, and aesthetic. Use insights from these images to create more targeted and visually coherent ad campaigns.`
+    : ""
+}
+
+IMPORTANT: Your "strategySummary" MUST incorporate and reference the specific details provided above:
+- If Target Market/Audience is provided, explicitly mention WHO you're targeting
+- If Campaign Details are provided, explicitly reference the campaign goals/context
+- If Supplementary Images are analyzed, mention key visual elements or product features discovered
+- Connect these specific elements to your chosen viral angle
+- CRITICAL: If Campaign Details contain scheduling information (dates, times, duration), you MUST parse and extract this information to determine the exact scheduled times for posts
 
 Output the strategy as valid JSON matching this exact schema:
 {
-  "strategySummary": "A 2-sentence overview of the campaign angle.",
-  "targetAudience": "Specific sub-culture or demographic.",
+  "title": "A catchy, concise campaign title (3-6 words) that captures the essence of the campaign (e.g., 'Holiday Sale Blitz', 'Product Launch Hype', 'Summer Savings Storm')",
+  "strategySummary": "A 2-sentence overview that EXPLICITLY references the provided target audience (if any), campaign details (if any), and explains the core viral angle being used.",
+  "targetAudience": "Specific sub-culture or demographic (use provided target market if available, otherwise infer).",
   "posts": [
     {
       "id": "post_1",
-      "scheduledTime": "ISO String (start from tomorrow, spread over 7 days)",
+      "scheduledTime": "ISO String - YOU MUST parse scheduling information from Campaign Details if provided. If Campaign Details mention specific dates/times/duration (e.g., '10 minute campaign starting at 8:39pm on 12/17/2025'), extract and use those exact times, distributing posts evenly within that timeframe. If no scheduling info is provided, default to starting from tomorrow and spreading over 7 days.",
       "content": "The main tweet text (engaging hook, no links, max 280 chars)",
       "replyContent": "The follow-up tweet containing the Call to Action and the LINK",
       "mediaType": "image" or "video",
       "mediaPrompt": "Detailed prompt for the AI generator (photorealistic for images, motion details for videos)",
-      "predictedCTR": "e.g. 3.1%",
-      "rationale": "Detailed reasoning: 'I chose this angle because [Trend X] is peaking, and it highlights [Feature Y].'",
+      "predictedCTR": "e.g. 3.1% - REQUIRED: Estimate click-through rate based on content type, trend relevance, and audience engagement patterns.",
+      "ctrReasoning": "REQUIRED: Explain WHY you predict this CTR - reference hook strength, audience fit, trend relevance, and CTA clarity",
+      "predictedCPM": "e.g. $5.50 - REQUIRED: Estimate the Cost Per Mille (cost per 1000 impressions) for X ads in this niche/audience. Consider factors like: competition level, audience specificity, media type (image vs video), time of year, and target demographics. Typical X CPM ranges: $2-$8 for broad audiences, $5-$15 for niche targeting, $10-$25 for highly competitive niches.",
+      "predictedCVR": "e.g. 1.2% - REQUIRED: Estimate the Conversion Rate (percentage of clicks that convert). Consider: product price point, landing page quality assumptions, offer strength, audience intent level, and industry benchmarks. Typical CVR ranges: 0.5-2% for cold traffic, 2-5% for warm audiences, 5-15% for retargeting or highly qualified traffic.",
+      "rationale": "REQUIRED: Comprehensive reasoning that includes: (1) WHY this specific angle/content works, (2) HOW it connects trends to product features and target audience, (3) JUSTIFICATION for the predicted CTR (why this engagement level?), (4) JUSTIFICATION for the predicted CPM (what market factors influenced this cost?), (5) JUSTIFICATION for the predicted CVR (why this conversion rate?). Example: 'I chose this meme angle because [Trend X] is peaking with 500M views, which aligns perfectly with [Feature Y] of the product. The CTR of 3.1% is justified by similar viral content in this niche achieving 2.8-3.5% engagement. The CPM of $6.50 reflects moderate competition in the tech enthusiast space during Q4. The CVR of 1.8% assumes a strong landing page and mid-tier product ($50-200 range), typical for warm audiences discovering via viral content.'",
       "status": "draft"
     }
   ]
 }`;
 
-    // Generate strategy using Grok
-    const response = await generateWithGrok(
-      STRATEGY_SYSTEM_PROMPT,
-      userPrompt,
-      0.7
-    );
+    // Generate strategy using Grok (with vision if images are provided)
+    const response =
+      supplementaryImages && supplementaryImages.length > 0
+        ? await generateWithGrokVision(
+            STRATEGY_SYSTEM_PROMPT,
+            userPrompt,
+            supplementaryImages,
+            0.7
+          )
+        : await generateWithGrok(STRATEGY_SYSTEM_PROMPT, userPrompt, 0.7);
 
     // Parse the JSON response
     let strategy: AdStrategy;
@@ -109,6 +161,57 @@ Output the strategy as valid JSON matching this exact schema:
         { error: "Failed to parse strategy response", details: response },
         { status: 500 }
       );
+    }
+
+    // Add budget to strategy and calculate all metrics
+    strategy.budget = budget;
+    strategy = calculateCampaignMetrics(strategy);
+
+    // Extract numeric values from string fields for backward compatibility
+    if (budget && budget > 0 && strategy.posts.length > 0) {
+      strategy.posts.forEach((post) => {
+        // Extract numeric CPM from predictedCPM string (e.g., "$5.50" -> 5.50)
+        if (post.predictedCPM && !post.estimatedCPM) {
+          const cpmMatch = post.predictedCPM.match(/\$?([\d.]+)/);
+          if (cpmMatch) {
+            post.estimatedCPM = parseFloat(cpmMatch[1]);
+          }
+        }
+        
+        // Extract numeric CVR from predictedCVR string (e.g., "1.2%" -> 1.2)
+        if (post.predictedCVR && !post.estimatedCVR) {
+          const cvrMatch = post.predictedCVR.match(/([\d.]+)%?/);
+          if (cvrMatch) {
+            post.estimatedCVR = parseFloat(cvrMatch[1]);
+          }
+        }
+      });
+
+      // Create budgetPredictions object for backward compatibility
+      const totalImpressions = strategy.totalImpressions || 0;
+      const totalClicks = strategy.totalTraffic || 0;
+      const totalConversions = strategy.totalConversions || 0;
+      const avgCTR = strategy.effectiveCTR ? strategy.effectiveCTR * 100 : 0;
+      const avgCVR = strategy.effectiveCVR ? strategy.effectiveCVR * 100 : 0;
+      
+      // Calculate average CPM from posts
+      const postsWithCPM = strategy.posts.filter(p => p.estimatedCPM);
+      const avgCPM = postsWithCPM.length > 0
+        ? postsWithCPM.reduce((sum, p) => sum + (p.estimatedCPM || 0), 0) / postsWithCPM.length
+        : 0;
+      
+      const costPerConversion = totalConversions > 0 ? budget / totalConversions : 0;
+
+      strategy.budgetPredictions = {
+        totalBudget: budget,
+        totalPredictedImpressions: Math.round(totalImpressions),
+        totalPredictedClicks: Math.round(totalClicks),
+        totalPredictedConversions: Math.round(totalConversions * 10) / 10,
+        avgCPM: Math.round(avgCPM * 100) / 100,
+        avgCTR: Math.round(avgCTR * 100) / 100,
+        avgCVR: Math.round(avgCVR * 100) / 100,
+        costPerConversion: Math.round(costPerConversion * 100) / 100,
+      };
     }
 
     return NextResponse.json(strategy);
