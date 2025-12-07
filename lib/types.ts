@@ -3,6 +3,7 @@
  */
 
 export interface AdStrategy {
+  title: string; // Campaign title (e.g., "Holiday Sale Blitz", "Product Launch Campaign")
   strategySummary: string; // 2-sentence campaign overview
   targetAudience: string;
   posts: AdPost[];

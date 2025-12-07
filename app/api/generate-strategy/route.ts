@@ -113,6 +113,7 @@ IMPORTANT: Your "strategySummary" MUST incorporate and reference the specific de
 
 Output the strategy as valid JSON matching this exact schema:
 {
+  "title": "A catchy, concise campaign title (3-6 words) that captures the essence of the campaign (e.g., 'Holiday Sale Blitz', 'Product Launch Hype', 'Summer Savings Storm')",
   "strategySummary": "A 2-sentence overview that EXPLICITLY references the provided target audience (if any), campaign details (if any), and explains the core viral angle being used.",
   "targetAudience": "Specific sub-culture or demographic (use provided target market if available, otherwise infer).",
   "posts": [

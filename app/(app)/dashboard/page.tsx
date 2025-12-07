@@ -30,6 +30,11 @@ interface ScheduledPost {
   predictedCTR?: string;
 }
 
+interface CachedStrategy {
+  title?: string;
+  posts: ScheduledPost[];
+}
+
 const statusColors = {
   draft: "bg-amber-50 text-amber-700 border-amber-200",
   generated: "bg-blue-50 text-blue-700 border-blue-200",
@@ -38,6 +43,7 @@ const statusColors = {
 
 export default function DashboardPage() {
   const [posts, setPosts] = useState<ScheduledPost[]>([]);
+  const [campaignTitle, setCampaignTitle] = useState<string>("");
   const [stats, setStats] = useState({
     total: 0,
     draft: 0,
@@ -50,9 +56,14 @@ export default function DashboardPage() {
     const cachedStrategy = localStorage.getItem("cachedStrategy");
     if (cachedStrategy) {
       try {
-        const parsed = JSON.parse(cachedStrategy);
+        const parsed: CachedStrategy = JSON.parse(cachedStrategy);
         if (parsed.posts) {
           setPosts(parsed.posts);
+          
+          // Set campaign title if available
+          if (parsed.title) {
+            setCampaignTitle(parsed.title);
+          }
 
           // Calculate stats
           const total = parsed.posts.length;
@@ -106,7 +117,9 @@ export default function DashboardPage() {
       {/* Welcome card */}
       <div className="rounded-2xl border border-border bg-card p-6">
         <h2 className="mb-2 text-xl font-medium text-foreground">
-          {posts.length > 0
+          {posts.length > 0 && campaignTitle
+            ? `Your Current Campaign: ${campaignTitle}`
+            : posts.length > 0
             ? "Your campaigns are ready"
             : "Create your first campaign"}
         </h2>
