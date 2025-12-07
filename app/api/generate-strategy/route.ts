@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateWithGrok, STRATEGY_SYSTEM_PROMPT } from "@/lib/grok";
+import {
+  generateWithGrok,
+  generateWithGrokVision,
+  STRATEGY_SYSTEM_PROMPT,
+} from "@/lib/grok";
 import { AdStrategy, StrategyRequest } from "@/lib/types";
 import { discoverCompetitors, getTrendingTopics } from "@/lib/x-api";
 
 export async function POST(request: NextRequest) {
   try {
     const body: StrategyRequest = await request.json();
-    let { productUrl, competitorHandles, trendContext } = body;
+    let {
+      productUrl,
+      competitorHandles,
+      trendContext,
+      targetMarket,
+      campaignDetails,
+      supplementaryImages,
+    } = body;
 
     if (!productUrl) {
       return NextResponse.json(
@@ -17,21 +28,35 @@ export async function POST(request: NextRequest) {
 
     // Auto-discover competitors if not provided
     if (!competitorHandles && process.env.X_API_BEARER_TOKEN) {
-      console.log('Auto-discovering competitors...');
+      console.log("🔍 Auto-discovering competitors...");
       const discoveredCompetitors = await discoverCompetitors(productUrl, 5);
       if (discoveredCompetitors.length > 0) {
-        competitorHandles = discoveredCompetitors.join(', ');
-        console.log('Discovered competitors:', competitorHandles);
+        competitorHandles = discoveredCompetitors.join(", ");
+        console.log(
+          `✅ Successfully discovered ${discoveredCompetitors.length} competitors:`,
+          competitorHandles
+        );
+      } else {
+        console.log(
+          "⚠️  No competitor accounts found - proceeding with general market analysis"
+        );
       }
     }
 
     // Enhance trend context with real trending topics if not provided
     if (!trendContext && process.env.X_API_BEARER_TOKEN) {
-      console.log('Fetching trending topics...');
+      console.log("🔍 Fetching trending topics...");
       const trends = await getTrendingTopics(10);
       if (trends.length > 0) {
-        trendContext = `Current trending topics: ${trends.join(', ')}`;
-        console.log('Added trending context:', trendContext);
+        trendContext = `Current trending topics: ${trends.join(", ")}`;
+        console.log(
+          `✅ Successfully found ${trends.length} trending topics:`,
+          trendContext
+        );
+      } else {
+        console.log(
+          "⚠️  No trending topics found - using general trend analysis"
+        );
       }
     }
 
@@ -40,8 +65,22 @@ export async function POST(request: NextRequest) {
 
 Product/Company URL: ${productUrl}
 ${
+  targetMarket
+    ? `Target Market/Audience: ${targetMarket}`
+    : "Target Market/Audience: Analyze and determine the best target audience"
+}
+${
+  campaignDetails
+    ? `Campaign Details: ${campaignDetails}`
+    : "Campaign Details: Design an engaging viral campaign"
+}
+${
   competitorHandles
-    ? `Competitor Handles (${competitorHandles.split(',').length > 3 ? 'Auto-discovered' : 'User-provided'}): ${competitorHandles}`
+    ? `Competitor Handles (${
+        competitorHandles.split(",").length > 3
+          ? "Auto-discovered"
+          : "User-provided"
+      }): ${competitorHandles}`
     : "Competitor Handles: Not provided - using general market analysis"
 }
 ${
@@ -49,15 +88,27 @@ ${
     ? `Current Trend Context: ${trendContext}`
     : "Current Trend Context: Analyze current viral trends on X"
 }
+${
+  supplementaryImages && supplementaryImages.length > 0
+    ? `\n\nSupplementary Images: ${supplementaryImages.length} product/service image(s) have been provided above. Analyze these images to understand the product's visual identity, features, and aesthetic. Use insights from these images to create more targeted and visually coherent ad campaigns.`
+    : ""
+}
+
+IMPORTANT: Your "strategySummary" MUST incorporate and reference the specific details provided above:
+- If Target Market/Audience is provided, explicitly mention WHO you're targeting
+- If Campaign Details are provided, explicitly reference the campaign goals/context
+- If Supplementary Images are analyzed, mention key visual elements or product features discovered
+- Connect these specific elements to your chosen viral angle
+- CRITICAL: If Campaign Details contain scheduling information (dates, times, duration), you MUST parse and extract this information to determine the exact scheduled times for posts
 
 Output the strategy as valid JSON matching this exact schema:
 {
-  "strategySummary": "A 2-sentence overview of the campaign angle.",
-  "targetAudience": "Specific sub-culture or demographic.",
+  "strategySummary": "A 2-sentence overview that EXPLICITLY references the provided target audience (if any), campaign details (if any), and explains the core viral angle being used.",
+  "targetAudience": "Specific sub-culture or demographic (use provided target market if available, otherwise infer).",
   "posts": [
     {
       "id": "post_1",
-      "scheduledTime": "ISO String (start from tomorrow, spread over 7 days)",
+      "scheduledTime": "ISO String - YOU MUST parse scheduling information from Campaign Details if provided. If Campaign Details mention specific dates/times/duration (e.g., '10 minute campaign starting at 8:39pm on 12/17/2025'), extract and use those exact times, distributing posts evenly within that timeframe. If no scheduling info is provided, default to starting from tomorrow and spreading over 7 days.",
       "content": "The main tweet text (engaging hook, no links, max 280 chars)",
       "replyContent": "The follow-up tweet containing the Call to Action and the LINK",
       "mediaType": "image" or "video",
@@ -69,12 +120,16 @@ Output the strategy as valid JSON matching this exact schema:
   ]
 }`;
 
-    // Generate strategy using Grok
-    const response = await generateWithGrok(
-      STRATEGY_SYSTEM_PROMPT,
-      userPrompt,
-      0.7
-    );
+    // Generate strategy using Grok (with vision if images are provided)
+    const response =
+      supplementaryImages && supplementaryImages.length > 0
+        ? await generateWithGrokVision(
+            STRATEGY_SYSTEM_PROMPT,
+            userPrompt,
+            supplementaryImages,
+            0.7
+          )
+        : await generateWithGrok(STRATEGY_SYSTEM_PROMPT, userPrompt, 0.7);
 
     // Parse the JSON response
     let strategy: AdStrategy;

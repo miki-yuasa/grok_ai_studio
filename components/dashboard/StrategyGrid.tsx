@@ -12,12 +12,26 @@ import { AdCard } from "./AdCard";
 
 interface StrategyGridProps {
   strategy: AdStrategy | null;
-  onMediaGenerated: (postId: string, mediaUrl: string) => void;
+  onMediaGenerated: (
+    postId: string,
+    mediaUrl: string,
+    mediaType: "image" | "video"
+  ) => void;
+  onPostEdited: (postId: string, content: string, replyContent: string, scheduledTime?: string) => void;
+  onMediaPromptEdited: (
+    postId: string,
+    imagePrompt: string,
+    videoPrompt: string
+  ) => void;
+  onPostStatusChanged?: (postId: string, status: "draft" | "generated" | "posted") => void;
 }
 
 export function StrategyGrid({
   strategy,
   onMediaGenerated,
+  onPostEdited,
+  onMediaPromptEdited,
+  onPostStatusChanged,
 }: StrategyGridProps) {
   if (!strategy) {
     return (
@@ -62,6 +76,9 @@ export function StrategyGrid({
               key={post.id}
               post={post}
               onMediaGenerated={onMediaGenerated}
+              onPostEdited={onPostEdited}
+              onMediaPromptEdited={onMediaPromptEdited}
+              onPostStatusChanged={onPostStatusChanged}
             />
           ))}
         </div>
