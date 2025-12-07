@@ -40,24 +40,9 @@ export async function generateVideoWithVeo(
   prompt: string
 ): Promise<{ videoUrl: string; thumbnailUrl?: string; concept: string }> {
   try {
-    // FIX 1: Switched to 'gemini-1.5-flash' to resolve 404 model not found errors
-    // It is faster and more widely available on v1beta
-    const model = genAI.getGenerativeModel({
-      model: "veo-3.1-fast-generate-001",
-    });
-
-    const enhancedPrompt = `As a video director, create a concise video description optimized for AI video generation. Focus on:
-- Specific visual elements and composition
-- Camera movement (pan, zoom, static)
-- Lighting and color palette
-- Motion and action
-
-Keep it detailed but under 150 words.
-
-Original concept: ${prompt}`;
-
-    const result = await model.generateContent(enhancedPrompt);
-    const concept = result.response.text();
+    // Skip Gemini enhancement to avoid model availability issues
+    // Use the prompt directly
+    const concept = prompt;
 
     // Use Vertex AI Veo for actual video generation
     const projectId = getProjectId();
@@ -77,7 +62,7 @@ Original concept: ${prompt}`;
     // Return a safe fallback rather than crashing
     return {
       videoUrl: "",
-      concept: `FAILED TO GENERATE ENHANCED PROMPT. Original: ${prompt}`,
+      concept: `FAILED TO GENERATE VIDEO. Original: ${prompt}`,
       thumbnailUrl: undefined,
     };
   }
@@ -91,71 +76,100 @@ async function generateWithVertexAI(
   prompt: string,
   projectId: string
 ): Promise<{ videoUrl: string; thumbnailUrl?: string; concept: string }> {
-  try {
-    // Get access token for Vertex AI
-    const accessToken = await getVertexAIAccessToken();
+  // Get access token for Vertex AI
+  const accessToken = await getVertexAIAccessToken();
 
-    // FIX 2: Removed duplicate 'const endpoint' declaration
-    // FIX 3: Used the passed 'projectId' argument correctly
-    const endpoint = `https://${VERTEX_AI_LOCATION}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${VERTEX_AI_LOCATION}/publishers/google/models/veo-001:predict`;
+  // List of models to try in order of preference
+  // Try Veo 2.0, then Veo 1.0 (Preview)
+  const models = [
+    "veo-2.0-generate-001",
+    "veo-2.0-generate-001-preview",
+    "veo-001-preview",
+    "veo-generate-001",
+  ];
 
-    const requestBody = {
-      instances: [
-        {
-          prompt: prompt,
-          // Veo parameters for short-form video
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: "16:9", // Twitter-optimized aspect ratio
-            duration: 5, // 5 seconds (Twitter video optimal length)
+  let lastError: Error | null = null;
+
+  for (const modelId of models) {
+    try {
+      console.log(`Attempting video generation with model: ${modelId}`);
+
+      const endpoint = `https://${VERTEX_AI_LOCATION}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${VERTEX_AI_LOCATION}/publishers/google/models/${modelId}:predict`;
+
+      const requestBody = {
+        instances: [
+          {
+            prompt: prompt,
+            // Veo parameters for short-form video
+            parameters: {
+              sampleCount: 1,
+              aspectRatio: "16:9", // Twitter-optimized aspect ratio
+              duration: 5, // 5 seconds (Twitter video optimal length)
+            },
           },
+        ],
+      };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
-      ],
-    };
+        body: JSON.stringify(requestBody),
+      });
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(requestBody),
-    });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(
+          `Model ${modelId} failed: ${response.status} - ${errorText}`
+        );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Vertex AI error:", errorText);
-      throw new Error(`Vertex AI API error: ${response.status} - ${errorText}`);
+        // If quota exceeded (429) or not found (404), throw to try next model
+        if (response.status === 429 || response.status === 404) {
+          throw new Error(`${response.status} - ${errorText}`);
+        }
+        // For other errors, also try next model as it might be model-specific
+        throw new Error(
+          `Vertex AI API error: ${response.status} - ${errorText}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Extract video URL from response
+      const videoData = data.predictions?.[0];
+
+      if (!videoData || !videoData.videoUri) {
+        throw new Error("No video generated");
+      }
+
+      // For videos stored in GCS, generate signed URL
+      const videoUrl = await getSignedUrl(videoData.videoUri);
+
+      return {
+        videoUrl,
+        concept: prompt,
+        thumbnailUrl: videoData.thumbnailUri
+          ? await getSignedUrl(videoData.thumbnailUri)
+          : undefined,
+      };
+    } catch (error) {
+      lastError = error as Error;
+      // Continue to next model
     }
-
-    const data = await response.json();
-
-    // Extract video URL from response
-    const videoData = data.predictions?.[0];
-
-    if (!videoData || !videoData.videoUri) {
-      throw new Error("No video generated");
-    }
-
-    // For videos stored in GCS, generate signed URL
-    const videoUrl = await getSignedUrl(videoData.videoUri);
-
-    return {
-      videoUrl,
-      concept: prompt,
-      thumbnailUrl: videoData.thumbnailUri
-        ? await getSignedUrl(videoData.thumbnailUri)
-        : undefined,
-    };
-  } catch (error) {
-    console.error("Vertex AI video generation error:", error);
-    // Fallback to concept display
-    return {
-      videoUrl: "",
-      concept: `VIDEO CONCEPT:\n\n${prompt}\n\n[Vertex AI video generation encountered an error. Check credentials and quota.]`,
-      thumbnailUrl: undefined,
-    };
   }
+
+  console.error("All video generation models failed. Last error:", lastError);
+
+  // Fallback to concept display with error details
+  return {
+    videoUrl: "",
+    concept: `VIDEO GENERATION FAILED.\n\nOriginal Prompt: ${prompt}\n\nError: ${
+      lastError?.message || "Unknown error"
+    }\n\n[Check Vertex AI Quotas in Google Cloud Console]`,
+    thumbnailUrl: undefined,
+  };
 }
 
 /**
