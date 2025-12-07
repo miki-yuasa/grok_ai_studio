@@ -59,7 +59,7 @@ export default function DashboardPage() {
         const parsed: CachedStrategy = JSON.parse(cachedStrategy);
         if (parsed.posts) {
           setPosts(parsed.posts);
-          
+
           // Set campaign title if available
           if (parsed.title) {
             setCampaignTitle(parsed.title);
