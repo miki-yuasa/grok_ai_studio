@@ -23,8 +23,11 @@ import {
   Save,
   X,
   Send,
+  CheckCircle2,
+  Circle,
 } from "lucide-react";
 import { formatNumber } from "@/lib/metrics";
+import { ImagePreview } from "@/components/dashboard/ImagePreview";
 
 interface AdCardProps {
   post: AdPost;
@@ -59,6 +62,11 @@ export function AdCard({
 }: AdCardProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<"image" | "video" | null>(
+    post.imageUrl ? "image" : post.videoUrl ? "video" : null
+  );
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingImagePrompt, setIsEditingImagePrompt] = useState(false);
@@ -216,6 +224,48 @@ export function AdCard({
     }
   };
 
+  const handleSchedulePost = async () => {
+    setIsScheduling(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/save-scheduled-post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: post.id,
+          content: post.content,
+          replyContent: post.replyContent,
+          scheduledTime: post.scheduledTime,
+          imageUrl: selectedAsset === "image" ? post.imageUrl : undefined,
+          videoUrl: selectedAsset === "video" ? post.videoUrl : undefined,
+          predictedCTR: post.predictedCTR,
+          predictedCPM: post.predictedCPM,
+          predictedCVR: post.predictedCVR,
+          status: "generated",
+          mediaType: post.mediaType,
+          imagePrompt: post.imagePrompt,
+          videoPrompt: post.videoPrompt,
+          rationale: post.rationale,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to schedule post");
+      }
+
+      setIsScheduled(true);
+      console.log("Post scheduled successfully for", post.scheduledTime);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
   const handlePostToX = async () => {
     setIsPosting(true);
     setError("");
@@ -229,8 +279,8 @@ export function AdCard({
         body: JSON.stringify({
           content: post.content,
           replyContent: post.replyContent,
-          imageUrl: post.imageUrl,
-          videoUrl: post.videoUrl,
+          imageUrl: selectedAsset === "image" ? post.imageUrl : undefined,
+          videoUrl: selectedAsset === "video" ? post.videoUrl : undefined,
         }),
       });
 
@@ -409,20 +459,57 @@ export function AdCard({
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Visual Assets</h4>
 
-          {/* Display existing media */}
+          {/* Display existing media with selection */}
           {(post.imageUrl || post.videoUrl) && (
             <div className="space-y-2">
+              {post.imageUrl && post.videoUrl && (
+                <p className="text-xs text-muted-foreground">
+                  Select which asset to post:
+                </p>
+              )}
               {post.imageUrl && (
-                <div className="rounded-md overflow-hidden border">
-                  <img
+                <div
+                  className="relative rounded-md overflow-hidden border group cursor-pointer"
+                  onClick={() => setSelectedAsset("image")}
+                >
+                  <ImagePreview
                     src={post.imageUrl}
                     alt="Generated ad image"
                     className="w-full h-48 object-cover"
                   />
+                  {/* Checkbox overlay */}
+                  <div
+                    className={`absolute top-3 right-3 transition-opacity ${
+                      post.videoUrl
+                        ? "opacity-0 group-hover:opacity-100"
+                        : "opacity-0"
+                    }`}
+                  >
+                    {selectedAsset === "image" ? (
+                      <CheckCircle2 className="h-6 w-6 text-primary bg-white dark:bg-black rounded-full" />
+                    ) : (
+                      <Circle className="h-6 w-6 text-muted-foreground bg-white dark:bg-black rounded-full" />
+                    )}
+                  </div>
+                  {/* Selected indicator always visible when both assets exist */}
+                  {post.videoUrl && selectedAsset === "image" && (
+                    <div className="absolute top-3 right-3">
+                      <CheckCircle2 className="h-6 w-6 text-primary bg-white dark:bg-black rounded-full" />
+                    </div>
+                  )}
+                  {/* Image label */}
+                  {post.videoUrl && (
+                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                      Image
+                    </div>
+                  )}
                 </div>
               )}
               {post.videoUrl && (
-                <div className="rounded-md overflow-hidden border">
+                <div
+                  className="relative rounded-md overflow-hidden border group cursor-pointer"
+                  onClick={() => setSelectedAsset("video")}
+                >
                   <video
                     src={post.videoUrl}
                     controls
@@ -434,6 +521,32 @@ export function AdCard({
                   >
                     Your browser does not support the video tag.
                   </video>
+                  {/* Checkbox overlay */}
+                  <div
+                    className={`absolute top-3 right-3 transition-opacity ${
+                      post.imageUrl
+                        ? "opacity-0 group-hover:opacity-100"
+                        : "opacity-0"
+                    }`}
+                  >
+                    {selectedAsset === "video" ? (
+                      <CheckCircle2 className="h-6 w-6 text-primary bg-white dark:bg-black rounded-full" />
+                    ) : (
+                      <Circle className="h-6 w-6 text-muted-foreground bg-white dark:bg-black rounded-full" />
+                    )}
+                  </div>
+                  {/* Selected indicator always visible when both assets exist */}
+                  {post.imageUrl && selectedAsset === "video" && (
+                    <div className="absolute top-3 right-3">
+                      <CheckCircle2 className="h-6 w-6 text-primary bg-white dark:bg-black rounded-full" />
+                    </div>
+                  )}
+                  {/* Video label */}
+                  {post.imageUrl && (
+                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                      Video
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -597,34 +710,69 @@ export function AdCard({
 
         {/* Post to X Button - Bottom */}
         {!isEditing && (
-          <div className="flex justify-center pt-4 border-t">
+          <div className="flex flex-col gap-2 pt-4 border-t">
             {post.status !== "posted" ? (
-              <Button
-                size="sm"
-                variant="default"
-                onClick={handlePostToX}
-                disabled={isPosting || !post.content}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isPosting ? (
-                  <>
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    Posting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-3 w-3 mr-1" />
-                    Post to X
-                  </>
+              <>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSchedulePost}
+                    disabled={isScheduling || isScheduled || !post.content}
+                    className="flex-1"
+                  >
+                    {isScheduling ? (
+                      <>
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        Scheduling...
+                      </>
+                    ) : isScheduled ? (
+                      <>
+                        <Clock className="h-3 w-3 mr-1" />
+                        ✓ Scheduled
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3 mr-1" />
+                        Schedule Post
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={handlePostToX}
+                    disabled={isPosting || !post.content}
+                    className="bg-blue-600 hover:bg-blue-700 flex-1"
+                  >
+                    {isPosting ? (
+                      <>
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        Posting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-3 w-3 mr-1" />
+                        Post Now
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {isScheduled && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    Will post automatically at {formatDate(post.scheduledTime)}
+                  </p>
                 )}
-              </Button>
+              </>
             ) : (
-              <Badge
-                variant="outline"
-                className="bg-green-50 text-green-700 border-green-300"
-              >
-                ✓ Posted
-              </Badge>
+              <div className="flex justify-center">
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-300"
+                >
+                  ✓ Posted
+                </Badge>
+              </div>
             )}
           </div>
         )}
