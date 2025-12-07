@@ -40,40 +40,32 @@ export default function Landing() {
 
       {/* Hero Section */}
       <main className="px-8 pb-px py-0 my-0">
-        <div className="relative mx-auto overflow-hidden rounded-3xl bg-muted">
-          <div
-            style={{
-              backgroundImage: `url(/hero-bg.gif), linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-            className="relative flex min-h-[70vh] flex-col items-center justify-center px-8 py-16"
-          >
-            {/* Overlay for better text readability */}
-            <div className="absolute inset-0 bg-black/40" />
+        <div className="relative mx-auto overflow-hidden rounded-3xl border border-border bg-card">
+          <div className="relative flex min-h-[70vh] flex-col items-center justify-center px-8 py-16">
+            {/* Subtle mesh background */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.05),rgba(255,255,255,0))]" />
 
             <div className="relative z-10 text-center">
-              <p className="mb-2 text-sm text-white/80">Introducing Studio</p>
-              <h1 className="mb-4 text-4xl font-medium text-white md:text-5xl lg:text-6xl">
+              <p className="mb-2 text-sm text-muted-foreground uppercase tracking-wider">
+                Introducing Studio
+              </p>
+              <h1 className="mb-4 text-4xl font-semibold text-foreground md:text-5xl lg:text-6xl tracking-tight">
                 The future of marketing.
               </h1>
-              <p className="mb-8 text-lg text-white/70 max-w-2xl mx-auto">
+              <p className="mb-8 text-lg text-muted-foreground max-w-2xl mx-auto">
                 AI-powered ad campaigns for X. Generate viral content with Grok
                 & Veo.
               </p>
 
               <div className="gap-4 items-center justify-center flex flex-row">
                 <a href="#features">
-                  <Button
-                    variant="outline"
-                    className="rounded-full border-white/20 bg-white/10 text-white hover:bg-white/20"
-                  >
+                  <Button variant="outline" size="lg" className="rounded-full">
                     Learn More
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </a>
                 <Link href="/dashboard">
-                  <Button className="rounded-full bg-white text-black hover:bg-white/90">
+                  <Button size="lg" className="rounded-full">
                     Get Started
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>

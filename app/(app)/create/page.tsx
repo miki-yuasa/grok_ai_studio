@@ -23,9 +23,15 @@ export default function CreatePage() {
     text: string;
   } | null>(null);
   const [generationSteps, setGenerationSteps] = useState<
-    Array<{ id: string; label: string; status: "pending" | "active" | "complete" }>
+    Array<{
+      id: string;
+      label: string;
+      status: "pending" | "active" | "complete";
+    }>
   >([]);
-  const [builderData, setBuilderData] = useState<StrategyBuilderData | null>(null);
+  const [builderData, setBuilderData] = useState<StrategyBuilderData | null>(
+    null
+  );
   const [showBuilderBanner, setShowBuilderBanner] = useState(false);
 
   // Load cached strategy and builder data on mount
@@ -338,7 +344,7 @@ export default function CreatePage() {
               <Sparkles className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-medium text-foreground">
-              Create Campaign
+              {strategy ? "New Campaign" : "Create Campaign"}
             </h1>
           </div>
           {strategy && strategy.posts.length > 0 && (
@@ -388,7 +394,8 @@ export default function CreatePage() {
                     Strategy Builder data imported!
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Your analytics insights have been pre-filled in the form below.
+                    Your analytics insights have been pre-filled in the form
+                    below.
                   </p>
                 </div>
               </div>
@@ -417,17 +424,17 @@ export default function CreatePage() {
 
       {/* Main Content */}
       <div className="space-y-8">
-        <InputForm 
+        <InputForm
           onStrategyGenerated={handleStrategyGenerated}
           onProgressUpdate={handleProgressUpdate}
           initialValues={builderData || undefined}
         />
-        
+
         {/* Generation Progress */}
         {generationSteps.length > 0 && (
           <GenerationProgress steps={generationSteps} />
         )}
-        
+
         <StrategyGrid
           strategy={strategy}
           onMediaGenerated={handleMediaGenerated}
@@ -439,4 +446,3 @@ export default function CreatePage() {
     </div>
   );
 }
-

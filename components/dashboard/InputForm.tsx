@@ -32,13 +32,23 @@ export function InputForm({
   const [productUrl, setProductUrl] = useState("");
   const [budget, setBudget] = useState("");
   const [competitorHandles, setCompetitorHandles] = useState("");
-  const [trendContext, setTrendContext] = useState(initialValues?.trendContext || "");
-  const [targetMarket, setTargetMarket] = useState(initialValues?.targetMarket || "");
-  const [campaignDetails, setCampaignDetails] = useState(initialValues?.campaignDetails || "");
+  const [trendContext, setTrendContext] = useState(
+    initialValues?.trendContext || ""
+  );
+  const [targetMarket, setTargetMarket] = useState(
+    initialValues?.targetMarket || ""
+  );
+  const [campaignDetails, setCampaignDetails] = useState(
+    initialValues?.campaignDetails || ""
+  );
   const [supplementaryImages, setSupplementaryImages] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(
-    !!(initialValues?.targetMarket || initialValues?.trendContext || initialValues?.campaignDetails)
+    !!(
+      initialValues?.targetMarket ||
+      initialValues?.trendContext ||
+      initialValues?.campaignDetails
+    )
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -185,11 +195,10 @@ export function InputForm({
           </div>
 
           <div className="flex justify-center">
-            <Button
+            <button
               type="button"
-              variant="outline"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center justify-center gap-2 px-6"
+              className="flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               {showAdvanced ? (
                 <>
@@ -202,7 +211,7 @@ export function InputForm({
                   Show Optional Details
                 </>
               )}
-            </Button>
+            </button>
           </div>
 
           {showAdvanced && (

@@ -259,10 +259,14 @@ export default function PipelineBuilder({
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
 
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
     setDraggingNode(nodeId);
+    // Calculate offset relative to the canvas, not absolute position
     setDragOffset({
-      x: e.clientX - node.x,
-      y: e.clientY - node.y,
+      x: e.clientX - rect.left - node.x,
+      y: e.clientY - rect.top - node.y,
     });
   };
 
@@ -722,7 +726,7 @@ export default function PipelineBuilder({
               setSelectedNode(null);
               setConnectingFrom(null);
             }}
-            className="relative rounded-2xl border-2 border-dashed border-border bg-gradient-to-br from-background to-muted/20 min-h-[500px] overflow-hidden"
+            className="relative rounded-2xl border-2 border-dashed border-border bg-muted/30 min-h-[500px] overflow-hidden"
             style={{
               backgroundImage:
                 "radial-gradient(circle, hsl(var(--border)) 1px, transparent 1px)",

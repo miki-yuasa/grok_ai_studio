@@ -308,8 +308,8 @@ export function AdCard({
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+          <div className="space-y-1 flex-1 min-w-0">
             {isEditing ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ export function AdCard({
             </div>
           </div>
           {/* Edit/Save Controls */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             {isEditing ? (
               <>
                 <Button size="sm" variant="outline" onClick={handleCancelEdit}>
@@ -411,7 +411,7 @@ export function AdCard({
               placeholder="Main post content..."
             />
           ) : (
-            <p className="text-sm leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
+            <p className="text-sm leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800 break-words overflow-wrap-anywhere">
               {post.content}
             </p>
           )}
@@ -428,7 +428,7 @@ export function AdCard({
               placeholder="Reply post with CTA and link..."
             />
           ) : (
-            <p className="text-xs leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
+            <p className="text-xs leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border break-words overflow-wrap-anywhere">
               {post.replyContent}
             </p>
           )}
@@ -475,7 +475,7 @@ export function AdCard({
                   <ImagePreview
                     src={post.imageUrl}
                     alt="Generated ad image"
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover max-w-full"
                   />
                   {/* Checkbox overlay */}
                   <div
@@ -517,7 +517,7 @@ export function AdCard({
                     loop
                     muted
                     playsInline
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover max-w-full"
                   >
                     Your browser does not support the video tag.
                   </video>
@@ -553,11 +553,11 @@ export function AdCard({
           )}
 
           {/* Generation buttons */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
               onClick={() => handleGenerateMedia("image")}
               disabled={isGenerating}
-              className="flex-1 min-w-[140px]"
+              className="flex-1"
               variant="outline"
               size="sm"
             >
@@ -576,7 +576,7 @@ export function AdCard({
             <Button
               onClick={() => handleGenerateMedia("video")}
               disabled={isGenerating}
-              className="flex-1 min-w-[140px]"
+              className="flex-1"
               variant="outline"
               size="sm"
             >

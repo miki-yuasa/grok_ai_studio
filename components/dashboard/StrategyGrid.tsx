@@ -146,7 +146,9 @@ export function StrategyGrid({
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                           <div className="space-y-2">
-                            <h4 className="font-medium text-sm">Total Impressions</h4>
+                            <h4 className="font-medium text-sm">
+                              Total Impressions
+                            </h4>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                               {metricExplanations.impressions}
                             </p>
@@ -175,7 +177,9 @@ export function StrategyGrid({
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                           <div className="space-y-2">
-                            <h4 className="font-medium text-sm">Total Traffic</h4>
+                            <h4 className="font-medium text-sm">
+                              Total Traffic
+                            </h4>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                               {metricExplanations.traffic}
                             </p>
@@ -204,7 +208,9 @@ export function StrategyGrid({
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                           <div className="space-y-2">
-                            <h4 className="font-medium text-sm">Total Conversions</h4>
+                            <h4 className="font-medium text-sm">
+                              Total Conversions
+                            </h4>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                               {metricExplanations.conversions}
                             </p>
@@ -233,7 +239,9 @@ export function StrategyGrid({
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                           <div className="space-y-2">
-                            <h4 className="font-medium text-sm">Effective CTR</h4>
+                            <h4 className="font-medium text-sm">
+                              Effective CTR
+                            </h4>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                               {metricExplanations.effectiveCTR}
                             </p>
@@ -262,7 +270,9 @@ export function StrategyGrid({
                         </PopoverTrigger>
                         <PopoverContent className="w-80">
                           <div className="space-y-2">
-                            <h4 className="font-medium text-sm">Effective CVR</h4>
+                            <h4 className="font-medium text-sm">
+                              Effective CVR
+                            </h4>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                               {metricExplanations.effectiveCVR}
                             </p>
@@ -291,7 +301,7 @@ export function StrategyGrid({
         <h3 className="text-lg font-semibold">
           Campaign Posts ({strategy.posts.length})
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {strategy.posts.map((post) => (
             <AdCard
               key={post.id}

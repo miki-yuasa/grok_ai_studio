@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   DollarSign,
@@ -49,8 +49,8 @@ export default function BudgetPredictions() {
   const [posts, setPosts] = useState<PostPrediction[]>([]);
   const [budget, setBudget] = useState<number>(0);
 
-  useEffect(() => {
-    // Load from localStorage
+  // Load campaign data from localStorage
+  const loadCampaignData = useCallback(() => {
     const cachedStrategy = localStorage.getItem("cachedStrategy");
     if (cachedStrategy) {
       try {
@@ -67,6 +67,31 @@ export default function BudgetPredictions() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    // Load on mount
+    loadCampaignData();
+
+    // Listen for storage events (when campaign is updated in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "cachedStrategy") {
+        loadCampaignData();
+      }
+    };
+
+    // Listen for focus events (when user navigates back to this tab)
+    const handleFocus = () => {
+      loadCampaignData();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [loadCampaignData]);
 
   const formatNumber = (num: number): string => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -305,7 +330,7 @@ export default function BudgetPredictions() {
 
           {/* Campaign Performance Predictions */}
           {displayPredictions.performanceScore !== undefined && (
-            <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 to-primary/10 p-6">
+            <div className="rounded-xl border border-border bg-card p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-medium text-foreground">
@@ -341,7 +366,7 @@ export default function BudgetPredictions() {
                 </div>
                 <div className="relative h-3 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="absolute h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-500"
+                    className="absolute h-full bg-primary transition-all duration-500"
                     style={{ width: `${displayPredictions.performanceScore}%` }}
                   />
                 </div>
@@ -524,15 +549,41 @@ export default function BudgetPredictions() {
               </div>
               <div className="divide-y divide-border">
                 {posts.map((post, i) => {
-                  const cpm = post.estimatedCPM || 8;
-                  const ctrStr = post.predictedCTR || "2%";
-                  const ctr = parseFloat(ctrStr.replace("%", ""));
-                  const cvr = post.estimatedCVR || 2;
+                  // Use actual values from post or calculate from predictions
+                  const cpm =
+                    post.estimatedCPM || displayPredictions.avgCPM || 8;
+
+                  // Parse CTR from string format
+                  let ctr = 2; // default
+                  if (post.predictedCTR) {
+                    const ctrStr = post.predictedCTR.replace("%", "").trim();
+                    const parsed = parseFloat(ctrStr);
+                    if (!isNaN(parsed)) ctr = parsed;
+                  }
+
+                  // Parse CVR - could be number or string
+                  let cvr = 2; // default
+                  if (post.estimatedCVR) {
+                    cvr =
+                      typeof post.estimatedCVR === "number"
+                        ? post.estimatedCVR
+                        : parseFloat(post.estimatedCVR);
+                  } else if (post.predictedCVR) {
+                    const cvrStr = post.predictedCVR.replace("%", "").trim();
+                    const parsed = parseFloat(cvrStr);
+                    if (!isNaN(parsed)) cvr = parsed;
+                  }
+
                   const budgetPerPost =
                     displayPredictions.totalBudget / posts.length;
-                  const impressions = (budgetPerPost / cpm) * 1000;
-                  const clicks = impressions * (ctr / 100);
-                  const conversions = clicks * (cvr / 100);
+
+                  // Use calculated values from post if available, otherwise compute
+                  const impressions =
+                    post.calculatedImpressions ?? (budgetPerPost / cpm) * 1000;
+                  const clicks =
+                    post.calculatedClicks ?? impressions * (ctr / 100);
+                  const conversions =
+                    post.calculatedConversions ?? clicks * (cvr / 100);
 
                   return (
                     <div key={post.id} className="px-6 py-4">
