@@ -94,10 +94,16 @@ ${
     : ""
 }
 
+IMPORTANT: Your "strategySummary" MUST incorporate and reference the specific details provided above:
+- If Target Market/Audience is provided, explicitly mention WHO you're targeting
+- If Campaign Details are provided, explicitly reference the campaign goals/context
+- If Supplementary Images are analyzed, mention key visual elements or product features discovered
+- Connect these specific elements to your chosen viral angle
+
 Output the strategy as valid JSON matching this exact schema:
 {
-  "strategySummary": "A 2-sentence overview of the campaign angle.",
-  "targetAudience": "Specific sub-culture or demographic.",
+  "strategySummary": "A 2-sentence overview that EXPLICITLY references the provided target audience (if any), campaign details (if any), and explains the core viral angle being used.",
+  "targetAudience": "Specific sub-culture or demographic (use provided target market if available, otherwise infer).",
   "posts": [
     {
       "id": "post_1",
