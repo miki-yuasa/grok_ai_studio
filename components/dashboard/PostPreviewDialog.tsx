@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, TrendingUp, Image as ImageIcon, Video } from "lucide-react";
 import { formatNumber } from "@/lib/metrics";

@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 
@@ -40,11 +36,7 @@ export function ImagePreview({ src, alt, className }: ImagePreviewProps) {
     <>
       {/* Thumbnail with zoom overlay */}
       <div className="relative group">
-        <img
-          src={src}
-          alt={alt}
-          className={className}
-        />
+        <img src={src} alt={alt} className={className} />
         <div
           className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center"
           onClick={() => setIsOpen(true)}
@@ -59,7 +51,7 @@ export function ImagePreview({ src, alt, className }: ImagePreviewProps) {
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden">
           <DialogTitle className="sr-only">Image Preview</DialogTitle>
-          
+
           {/* Zoom controls */}
           <div className="absolute top-4 right-4 z-10 flex gap-2 bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
             <Button
@@ -71,7 +63,9 @@ export function ImagePreview({ src, alt, className }: ImagePreviewProps) {
               <ZoomOut className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={handleReset}>
-              <span className="text-xs font-medium">{Math.round(scale * 100)}%</span>
+              <span className="text-xs font-medium">
+                {Math.round(scale * 100)}%
+              </span>
             </Button>
             <Button
               variant="ghost"

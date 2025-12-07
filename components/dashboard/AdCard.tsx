@@ -728,8 +728,7 @@ export function AdCard({
                       </>
                     ) : isScheduled ? (
                       <>
-                        <Clock className="h-3 w-3 mr-1" />
-                        ✓ Scheduled
+                        <Clock className="h-3 w-3 mr-1" />✓ Scheduled
                       </>
                     ) : (
                       <>
