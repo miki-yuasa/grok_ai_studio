@@ -17,21 +17,29 @@ import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 interface InputFormProps {
   onStrategyGenerated: (strategy: any) => void;
   onProgressUpdate?: (step: string) => void;
+  initialValues?: {
+    targetMarket?: string;
+    trendContext?: string;
+    campaignDetails?: string;
+  };
 }
 
 export function InputForm({
   onStrategyGenerated,
   onProgressUpdate,
+  initialValues,
 }: InputFormProps) {
   const [productUrl, setProductUrl] = useState("");
   const [budget, setBudget] = useState("");
   const [competitorHandles, setCompetitorHandles] = useState("");
-  const [trendContext, setTrendContext] = useState("");
-  const [targetMarket, setTargetMarket] = useState("");
-  const [campaignDetails, setCampaignDetails] = useState("");
+  const [trendContext, setTrendContext] = useState(initialValues?.trendContext || "");
+  const [targetMarket, setTargetMarket] = useState(initialValues?.targetMarket || "");
+  const [campaignDetails, setCampaignDetails] = useState(initialValues?.campaignDetails || "");
   const [supplementaryImages, setSupplementaryImages] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(
+    !!(initialValues?.targetMarket || initialValues?.trendContext || initialValues?.campaignDetails)
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 

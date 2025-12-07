@@ -13,6 +13,7 @@ export interface AdStrategy {
   totalConversions?: number; // Calculated total conversions
   effectiveCTR?: number; // Campaign-level CTR
   effectiveCVR?: number; // Campaign-level CVR
+  budgetPredictions?: BudgetPredictions; // Budget and conversion predictions (for backward compatibility)
 }
 
 export interface AdPost {
@@ -36,6 +37,10 @@ export interface AdPost {
   calculatedImpressions?: number;
   calculatedClicks?: number;
   calculatedConversions?: number;
+  // Budget prediction fields (for backward compatibility)
+  estimatedCPM?: number; // Estimated cost per mille (1000 impressions)
+  estimatedCVR?: number; // Estimated conversion rate (percentage)
+  ctrReasoning?: string; // Explanation of CTR prediction
 }
 
 export interface StrategyRequest {
@@ -46,6 +51,17 @@ export interface StrategyRequest {
   targetMarket?: string;
   campaignDetails?: string;
   supplementaryImages?: string[];
+}
+
+export interface BudgetPredictions {
+  totalBudget: number;
+  totalPredictedImpressions: number;
+  totalPredictedClicks: number;
+  totalPredictedConversions: number;
+  avgCPM: number;
+  avgCTR: number;
+  avgCVR: number;
+  costPerConversion: number;
 }
 
 export interface ImageGenerationRequest {
