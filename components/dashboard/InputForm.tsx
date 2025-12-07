@@ -16,10 +16,15 @@ import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 interface InputFormProps {
   onStrategyGenerated: (strategy: any) => void;
+  onProgressUpdate?: (step: string) => void;
 }
 
-export function InputForm({ onStrategyGenerated }: InputFormProps) {
+export function InputForm({
+  onStrategyGenerated,
+  onProgressUpdate,
+}: InputFormProps) {
   const [productUrl, setProductUrl] = useState("");
+  const [budget, setBudget] = useState("");
   const [competitorHandles, setCompetitorHandles] = useState("");
   const [trendContext, setTrendContext] = useState("");
   const [targetMarket, setTargetMarket] = useState("");
@@ -64,6 +69,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
     setError("");
 
     try {
+      onProgressUpdate?.("analyzing");
+
       // Convert images to base64 for sending
       const imageData: string[] = [];
       for (const file of supplementaryImages) {
@@ -80,6 +87,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
         }
       }
 
+      onProgressUpdate?.("searching");
+
       const response = await fetch("/api/generate-strategy", {
         method: "POST",
         headers: {
@@ -87,14 +96,12 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
         },
         body: JSON.stringify({
           productUrl,
+          budget: parseFloat(budget),
           competitorHandles: competitorHandles || undefined,
           trendContext: trendContext || undefined,
           targetMarket: targetMarket || undefined,
           campaignDetails: campaignDetails || undefined,
-          supplementaryImages:
-            imageData.length > 0
-              ? imageData
-              : undefined,
+          supplementaryImages: imageData.length > 0 ? imageData : undefined,
         }),
       });
 
@@ -103,7 +110,17 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
         throw new Error(errorData.error || "Failed to generate strategy");
       }
 
+      onProgressUpdate?.("predicting");
+
+      // Simulate a small delay for the predicting step to be visible
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      onProgressUpdate?.("synthesizing");
+
       const strategy = await response.json();
+
+      onProgressUpdate?.("complete");
+
       onStrategyGenerated(strategy);
     } catch (err) {
       setError((err as Error).message);
@@ -133,6 +150,30 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
               onChange={(e) => setProductUrl(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="budget">Campaign Budget (USD) *</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                $
+              </span>
+              <Input
+                id="budget"
+                type="number"
+                placeholder="1000"
+                min="1"
+                step="0.01"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                required
+                className="pl-7"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total budget for this campaign - used to calculate predicted
+              impressions, traffic, and conversions
+            </p>
           </div>
 
           <div className="flex justify-center">

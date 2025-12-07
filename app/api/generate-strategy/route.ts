@@ -6,12 +6,14 @@ import {
 } from "@/lib/grok";
 import { AdStrategy, StrategyRequest } from "@/lib/types";
 import { discoverCompetitors, getTrendingTopics } from "@/lib/x-api";
+import { calculateCampaignMetrics } from "@/lib/metrics";
 
 export async function POST(request: NextRequest) {
   try {
     const body: StrategyRequest = await request.json();
     let {
       productUrl,
+      budget,
       competitorHandles,
       trendContext,
       targetMarket,
@@ -22,6 +24,13 @@ export async function POST(request: NextRequest) {
     if (!productUrl) {
       return NextResponse.json(
         { error: "Product URL is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!budget || budget <= 0) {
+      return NextResponse.json(
+        { error: "Valid budget is required" },
         { status: 400 }
       );
     }
@@ -61,9 +70,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Build the user prompt
-    const userPrompt = `Generate a comprehensive viral marketing strategy for X (Twitter) with the following parameters:
+    const userPrompt = `Generate a comprehensive viral marketing strategy for X  with the following parameters:
 
 Product/Company URL: ${productUrl}
+Campaign Budget: $${budget.toLocaleString()} USD
 ${
   targetMarket
     ? `Target Market/Audience: ${targetMarket}`
@@ -103,6 +113,7 @@ IMPORTANT: Your "strategySummary" MUST incorporate and reference the specific de
 
 Output the strategy as valid JSON matching this exact schema:
 {
+  "title": "A catchy, concise campaign title (3-6 words) that captures the essence of the campaign (e.g., 'Holiday Sale Blitz', 'Product Launch Hype', 'Summer Savings Storm')",
   "strategySummary": "A 2-sentence overview that EXPLICITLY references the provided target audience (if any), campaign details (if any), and explains the core viral angle being used.",
   "targetAudience": "Specific sub-culture or demographic (use provided target market if available, otherwise infer).",
   "posts": [
@@ -113,8 +124,10 @@ Output the strategy as valid JSON matching this exact schema:
       "replyContent": "The follow-up tweet containing the Call to Action and the LINK",
       "mediaType": "image" or "video",
       "mediaPrompt": "Detailed prompt for the AI generator (photorealistic for images, motion details for videos)",
-      "predictedCTR": "e.g. 3.1%",
-      "rationale": "Detailed reasoning: 'I chose this angle because [Trend X] is peaking, and it highlights [Feature Y].'",
+      "predictedCTR": "e.g. 3.1% - REQUIRED: Estimate click-through rate based on content type, trend relevance, and audience engagement patterns.",
+      "predictedCPM": "e.g. $5.50 - REQUIRED: Estimate the Cost Per Mille (cost per 1000 impressions) for X ads in this niche/audience. Consider factors like: competition level, audience specificity, media type (image vs video), time of year, and target demographics. Typical X CPM ranges: $2-$8 for broad audiences, $5-$15 for niche targeting, $10-$25 for highly competitive niches.",
+      "predictedCVR": "e.g. 1.2% - REQUIRED: Estimate the Conversion Rate (percentage of clicks that convert). Consider: product price point, landing page quality assumptions, offer strength, audience intent level, and industry benchmarks. Typical CVR ranges: 0.5-2% for cold traffic, 2-5% for warm audiences, 5-15% for retargeting or highly qualified traffic.",
+      "rationale": "REQUIRED: Comprehensive reasoning that includes: (1) WHY this specific angle/content works, (2) HOW it connects trends to product features and target audience, (3) JUSTIFICATION for the predicted CTR (why this engagement level?), (4) JUSTIFICATION for the predicted CPM (what market factors influenced this cost?), (5) JUSTIFICATION for the predicted CVR (why this conversion rate?). Example: 'I chose this meme angle because [Trend X] is peaking with 500M views, which aligns perfectly with [Feature Y] of the product. The CTR of 3.1% is justified by similar viral content in this niche achieving 2.8-3.5% engagement. The CPM of $6.50 reflects moderate competition in the tech enthusiast space during Q4. The CVR of 1.8% assumes a strong landing page and mid-tier product ($50-200 range), typical for warm audiences discovering via viral content.'",
       "status": "draft"
     }
   ]
@@ -147,6 +160,10 @@ Output the strategy as valid JSON matching this exact schema:
         { status: 500 }
       );
     }
+
+    // Add budget to strategy and calculate all metrics
+    strategy.budget = budget;
+    strategy = calculateCampaignMetrics(strategy);
 
     return NextResponse.json(strategy);
   } catch (error) {

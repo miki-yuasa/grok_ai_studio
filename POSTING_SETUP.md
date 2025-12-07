@@ -1,4 +1,4 @@
-# X (Twitter) Posting Setup Guide
+# X  Posting Setup Guide
 
 ## What's Implemented ✅
 
@@ -55,7 +55,7 @@ Posts are now stored server-side:
 
 1. **Posts are automatically saved** to database when generated/edited
 2. **Cron job runs every minute** checking for due posts
-3. **Due posts are automatically posted** to X (Twitter)
+3. **Due posts are automatically posted** to X 
 4. **Status is updated** to "posted" after successful posting
 
 See `SCHEDULING_SETUP.md` for detailed setup instructions.
