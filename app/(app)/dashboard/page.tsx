@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { formatNumber } from "@/lib/metrics";
 
 interface ScheduledPost {
   id: string;
@@ -153,7 +154,12 @@ export default function DashboardPage() {
                 <TableHead className="text-muted-foreground">Scheduled</TableHead>
                 <TableHead className="text-muted-foreground">Content</TableHead>
                 <TableHead className="text-muted-foreground">Media</TableHead>
-                <TableHead className="text-muted-foreground text-right">CTR</TableHead>
+                <TableHead className="text-muted-foreground text-right">Pred. Impressions</TableHead>
+                <TableHead className="text-muted-foreground text-right">Pred. Clicks</TableHead>
+                <TableHead className="text-muted-foreground text-right">Pred. Conversions</TableHead>
+                <TableHead className="text-muted-foreground text-right">Pred. CTR</TableHead>
+                <TableHead className="text-muted-foreground text-right">Pred. CPM</TableHead>
+                <TableHead className="text-muted-foreground text-right">Pred. CVR</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -190,8 +196,23 @@ export default function DashboardPage() {
                       )}
                     </div>
                   </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {post.calculatedImpressions ? formatNumber(post.calculatedImpressions) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {post.calculatedClicks ? formatNumber(post.calculatedClicks) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {post.calculatedConversions ? post.calculatedConversions.toFixed(1) : "—"}
+                  </TableCell>
                   <TableCell className="text-right font-medium text-foreground">
                     {post.predictedCTR || "—"}
+                  </TableCell>
+                  <TableCell className="text-right font-medium text-foreground">
+                    {post.predictedCPM || "—"}
+                  </TableCell>
+                  <TableCell className="text-right font-medium text-foreground">
+                    {post.predictedCVR || "—"}
                   </TableCell>
                 </TableRow>
               ))}
