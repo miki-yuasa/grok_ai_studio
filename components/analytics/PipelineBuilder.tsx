@@ -795,17 +795,19 @@ export default function PipelineBuilder({
             const node = nodes.find((n) => n.id === selectedNode);
             if (!node) return null;
 
+            const items = node.data?.filteredItems || node.data?.items;
+
             return (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{node.type}</Badge>
                   <span className="text-sm text-foreground">{node.data.name}</span>
                 </div>
-                {(node.data.filteredItems || node.data.items)?.length > 0 && (
+                {items && items.length > 0 && (
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Data Preview:</p>
                     <div className="max-h-32 overflow-y-auto space-y-1">
-                      {(node.data.filteredItems || node.data.items)?.slice(0, 5).map((item, i) => (
+                      {items.slice(0, 5).map((item, i) => (
                         <p key={i} className="text-xs text-foreground bg-muted/50 p-2 rounded">
                           {item.substring(0, 100)}...
                         </p>

@@ -29,6 +29,8 @@ interface ScheduledPost {
   imageUrl?: string;
   videoUrl?: string;
   predictedCTR?: string;
+  predictedCPM?: string;
+  predictedCVR?: string;
   calculatedImpressions?: number;
   calculatedClicks?: number;
   calculatedConversions?: number;
