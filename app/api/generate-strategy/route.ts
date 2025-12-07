@@ -17,25 +17,35 @@ export async function POST(request: NextRequest) {
 
     // Auto-discover competitors if not provided
     if (!competitorHandles && process.env.X_API_BEARER_TOKEN) {
-      console.log('🔍 Auto-discovering competitors...');
+      console.log("🔍 Auto-discovering competitors...");
       const discoveredCompetitors = await discoverCompetitors(productUrl, 5);
       if (discoveredCompetitors.length > 0) {
-        competitorHandles = discoveredCompetitors.join(', ');
-        console.log(`✅ Successfully discovered ${discoveredCompetitors.length} competitors:`, competitorHandles);
+        competitorHandles = discoveredCompetitors.join(", ");
+        console.log(
+          `✅ Successfully discovered ${discoveredCompetitors.length} competitors:`,
+          competitorHandles
+        );
       } else {
-        console.log('⚠️  No competitor accounts found - proceeding with general market analysis');
+        console.log(
+          "⚠️  No competitor accounts found - proceeding with general market analysis"
+        );
       }
     }
 
     // Enhance trend context with real trending topics if not provided
     if (!trendContext && process.env.X_API_BEARER_TOKEN) {
-      console.log('🔍 Fetching trending topics...');
+      console.log("🔍 Fetching trending topics...");
       const trends = await getTrendingTopics(10);
       if (trends.length > 0) {
-        trendContext = `Current trending topics: ${trends.join(', ')}`;
-        console.log(`✅ Successfully found ${trends.length} trending topics:`, trendContext);
+        trendContext = `Current trending topics: ${trends.join(", ")}`;
+        console.log(
+          `✅ Successfully found ${trends.length} trending topics:`,
+          trendContext
+        );
       } else {
-        console.log('⚠️  No trending topics found - using general trend analysis');
+        console.log(
+          "⚠️  No trending topics found - using general trend analysis"
+        );
       }
     }
 
@@ -45,7 +55,11 @@ export async function POST(request: NextRequest) {
 Product/Company URL: ${productUrl}
 ${
   competitorHandles
-    ? `Competitor Handles (${competitorHandles.split(',').length > 3 ? 'Auto-discovered' : 'User-provided'}): ${competitorHandles}`
+    ? `Competitor Handles (${
+        competitorHandles.split(",").length > 3
+          ? "Auto-discovered"
+          : "User-provided"
+      }): ${competitorHandles}`
     : "Competitor Handles: Not provided - using general market analysis"
 }
 ${
