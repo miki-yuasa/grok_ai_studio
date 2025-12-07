@@ -98,6 +98,7 @@ ${
     ? `Current Trend Context: ${trendContext}`
     : "Current Trend Context: Analyze current viral trends on X"
 }
+${budget ? `Campaign Budget: $${budget} USD` : "Campaign Budget: Not specified"}
 ${
   supplementaryImages && supplementaryImages.length > 0
     ? `\n\nSupplementary Images: ${supplementaryImages.length} product/service image(s) have been provided above. Analyze these images to understand the product's visual identity, features, and aesthetic. Use insights from these images to create more targeted and visually coherent ad campaigns.`
@@ -125,6 +126,7 @@ Output the strategy as valid JSON matching this exact schema:
       "mediaType": "image" or "video",
       "mediaPrompt": "Detailed prompt for the AI generator (photorealistic for images, motion details for videos)",
       "predictedCTR": "e.g. 3.1% - REQUIRED: Estimate click-through rate based on content type, trend relevance, and audience engagement patterns.",
+      "ctrReasoning": "REQUIRED: Explain WHY you predict this CTR - reference hook strength, audience fit, trend relevance, and CTA clarity",
       "predictedCPM": "e.g. $5.50 - REQUIRED: Estimate the Cost Per Mille (cost per 1000 impressions) for X ads in this niche/audience. Consider factors like: competition level, audience specificity, media type (image vs video), time of year, and target demographics. Typical X CPM ranges: $2-$8 for broad audiences, $5-$15 for niche targeting, $10-$25 for highly competitive niches.",
       "predictedCVR": "e.g. 1.2% - REQUIRED: Estimate the Conversion Rate (percentage of clicks that convert). Consider: product price point, landing page quality assumptions, offer strength, audience intent level, and industry benchmarks. Typical CVR ranges: 0.5-2% for cold traffic, 2-5% for warm audiences, 5-15% for retargeting or highly qualified traffic.",
       "rationale": "REQUIRED: Comprehensive reasoning that includes: (1) WHY this specific angle/content works, (2) HOW it connects trends to product features and target audience, (3) JUSTIFICATION for the predicted CTR (why this engagement level?), (4) JUSTIFICATION for the predicted CPM (what market factors influenced this cost?), (5) JUSTIFICATION for the predicted CVR (why this conversion rate?). Example: 'I chose this meme angle because [Trend X] is peaking with 500M views, which aligns perfectly with [Feature Y] of the product. The CTR of 3.1% is justified by similar viral content in this niche achieving 2.8-3.5% engagement. The CPM of $6.50 reflects moderate competition in the tech enthusiast space during Q4. The CVR of 1.8% assumes a strong landing page and mid-tier product ($50-200 range), typical for warm audiences discovering via viral content.'",
@@ -164,6 +166,53 @@ Output the strategy as valid JSON matching this exact schema:
     // Add budget to strategy and calculate all metrics
     strategy.budget = budget;
     strategy = calculateCampaignMetrics(strategy);
+
+    // Extract numeric values from string fields for backward compatibility
+    if (budget && budget > 0 && strategy.posts.length > 0) {
+      strategy.posts.forEach((post) => {
+        // Extract numeric CPM from predictedCPM string (e.g., "$5.50" -> 5.50)
+        if (post.predictedCPM && !post.estimatedCPM) {
+          const cpmMatch = post.predictedCPM.match(/\$?([\d.]+)/);
+          if (cpmMatch) {
+            post.estimatedCPM = parseFloat(cpmMatch[1]);
+          }
+        }
+        
+        // Extract numeric CVR from predictedCVR string (e.g., "1.2%" -> 1.2)
+        if (post.predictedCVR && !post.estimatedCVR) {
+          const cvrMatch = post.predictedCVR.match(/([\d.]+)%?/);
+          if (cvrMatch) {
+            post.estimatedCVR = parseFloat(cvrMatch[1]);
+          }
+        }
+      });
+
+      // Create budgetPredictions object for backward compatibility
+      const totalImpressions = strategy.totalImpressions || 0;
+      const totalClicks = strategy.totalTraffic || 0;
+      const totalConversions = strategy.totalConversions || 0;
+      const avgCTR = strategy.effectiveCTR ? strategy.effectiveCTR * 100 : 0;
+      const avgCVR = strategy.effectiveCVR ? strategy.effectiveCVR * 100 : 0;
+      
+      // Calculate average CPM from posts
+      const postsWithCPM = strategy.posts.filter(p => p.estimatedCPM);
+      const avgCPM = postsWithCPM.length > 0
+        ? postsWithCPM.reduce((sum, p) => sum + (p.estimatedCPM || 0), 0) / postsWithCPM.length
+        : 0;
+      
+      const costPerConversion = totalConversions > 0 ? budget / totalConversions : 0;
+
+      strategy.budgetPredictions = {
+        totalBudget: budget,
+        totalPredictedImpressions: Math.round(totalImpressions),
+        totalPredictedClicks: Math.round(totalClicks),
+        totalPredictedConversions: Math.round(totalConversions * 10) / 10,
+        avgCPM: Math.round(avgCPM * 100) / 100,
+        avgCTR: Math.round(avgCTR * 100) / 100,
+        avgCVR: Math.round(avgCVR * 100) / 100,
+        costPerConversion: Math.round(costPerConversion * 100) / 100,
+      };
+    }
 
     return NextResponse.json(strategy);
   } catch (error) {

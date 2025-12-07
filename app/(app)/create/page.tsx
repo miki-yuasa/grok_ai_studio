@@ -5,8 +5,15 @@ import { InputForm } from "@/components/dashboard/InputForm";
 import { StrategyGrid } from "@/components/dashboard/StrategyGrid";
 import { GenerationProgress } from "@/components/dashboard/GenerationProgress";
 import { AdStrategy } from "@/lib/types";
-import { Sparkles, Trash2 } from "lucide-react";
+import { Sparkles, Trash2, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+interface StrategyBuilderData {
+  targetMarket?: string;
+  trendContext?: string;
+  campaignDetails?: string;
+}
 
 export default function CreatePage() {
   const [strategy, setStrategy] = useState<AdStrategy | null>(null);
@@ -18,9 +25,25 @@ export default function CreatePage() {
   const [generationSteps, setGenerationSteps] = useState<
     Array<{ id: string; label: string; status: "pending" | "active" | "complete" }>
   >([]);
+  const [builderData, setBuilderData] = useState<StrategyBuilderData | null>(null);
+  const [showBuilderBanner, setShowBuilderBanner] = useState(false);
 
-  // Load cached strategy on mount
+  // Load cached strategy and builder data on mount
   useEffect(() => {
+    // Check for strategy builder data first
+    const strategyBuilderDataStr = localStorage.getItem("strategyBuilderData");
+    if (strategyBuilderDataStr) {
+      try {
+        const data = JSON.parse(strategyBuilderDataStr);
+        setBuilderData(data);
+        setShowBuilderBanner(true);
+        // Clear after loading
+        localStorage.removeItem("strategyBuilderData");
+      } catch (error) {
+        console.error("Failed to parse strategy builder data:", error);
+      }
+    }
+
     const cachedStrategy = localStorage.getItem("cachedStrategy");
     if (cachedStrategy) {
       try {
@@ -353,6 +376,43 @@ export default function CreatePage() {
             {clearMessage.text}
           </div>
         )}
+
+        {/* Strategy Builder Banner */}
+        {showBuilderBanner && builderData && (
+          <div className="mt-4 p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Layers className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground">
+                    Strategy Builder data imported!
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your analytics insights have been pre-filled in the form below.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {builderData.targetMarket && (
+                  <Badge variant="secondary">Audience</Badge>
+                )}
+                {builderData.trendContext && (
+                  <Badge variant="secondary">Trends</Badge>
+                )}
+                {builderData.campaignDetails && (
+                  <Badge variant="secondary">Strategy</Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowBuilderBanner(false)}
+                >
+                  ×
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -360,6 +420,7 @@ export default function CreatePage() {
         <InputForm 
           onStrategyGenerated={handleStrategyGenerated}
           onProgressUpdate={handleProgressUpdate}
+          initialValues={builderData || undefined}
         />
         
         {/* Generation Progress */}
@@ -378,3 +439,4 @@ export default function CreatePage() {
     </div>
   );
 }
+
