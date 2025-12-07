@@ -81,7 +81,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-medium text-foreground">Dashboard</h1>
           <p className="text-muted-foreground">Welcome to your campaign overview</p>
         </div>
-        <Link href="/dashboard/create">
+        <Link href="/create">
           <Button className="rounded-full">
             <Plus className="h-4 w-4 mr-2" />
             Create Campaign
@@ -104,7 +104,7 @@ export default function DashboardPage() {
             : "Get started by creating an AI-powered ad campaign for X (Twitter)"
           }
         </p>
-        <Link href="/dashboard/create">
+        <Link href="/create">
           <button className="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
             {posts.length > 0 ? "Create another campaign" : "Get started"} <ArrowRight className="h-4 w-4" />
           </button>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
           <p className="text-muted-foreground mb-4">
             Create your first AI-powered ad campaign to get started
           </p>
-          <Link href="/dashboard/create">
+          <Link href="/create">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               Create Campaign

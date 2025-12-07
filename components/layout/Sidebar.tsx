@@ -18,13 +18,13 @@ const Sidebar = () => {
     {
       id: "create",
       label: "Create Ads",
-      href: "/dashboard/create",
+      href: "/create",
       icon: Plus,
     },
     {
       id: "analytics",
       label: "Analytics",
-      href: "/dashboard/analytics",
+      href: "/analytics",
       icon: BarChart3,
     },
   ];

@@ -393,11 +393,11 @@ export function AdCard({
           )}
 
           {/* Generation buttons */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={() => handleGenerateMedia("image")}
               disabled={isGenerating}
-              className="flex-1"
+              className="flex-1 min-w-[140px]"
               variant="outline"
               size="sm"
             >
@@ -416,7 +416,7 @@ export function AdCard({
             <Button
               onClick={() => handleGenerateMedia("video")}
               disabled={isGenerating}
-              className="flex-1"
+              className="flex-1 min-w-[140px]"
               variant="outline"
               size="sm"
             >

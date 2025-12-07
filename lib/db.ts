@@ -108,3 +108,11 @@ export async function deleteScheduledPost(postId: string): Promise<void> {
   await fs.writeFile(DB_FILE, JSON.stringify(filtered, null, 2), "utf-8");
 }
 
+/**
+ * Clear all scheduled posts
+ */
+export async function clearAllPosts(): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(DB_FILE, JSON.stringify([], null, 2), "utf-8");
+}
+

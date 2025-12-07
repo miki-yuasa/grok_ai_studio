@@ -113,9 +113,18 @@ async function generateWithRunway(
     // - promptText (camelCase, not snake_case)
     // - duration must be 4, 6, or 8 seconds
     // - ratio format like "1280:720"
+    // - promptText must be <= 1000 characters
+    const truncatedPrompt = prompt.length > 1000 
+      ? prompt.substring(0, 997) + "..." 
+      : prompt;
+    
+    if (prompt.length > 1000) {
+      console.log(`🎬 [RUNWAY] Warning: Prompt truncated from ${prompt.length} to 1000 characters`);
+    }
+    
     const requestBody = {
       model: "veo3.1_fast",
-      promptText: prompt,  // camelCase!
+      promptText: truncatedPrompt,  // camelCase! Max 1000 chars
       duration: 4,         // Must be 4, 6, or 8 (using 4 to save credits)
       ratio: "1280:720",   // 16:9 aspect ratio
     };

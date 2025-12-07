@@ -157,7 +157,7 @@ export default function Landing() {
             <a href="#about" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
               About
             </a>
-            <Link href="/dashboard/create" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+            <Link href="/create" className="text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
               Create
             </Link>
           </div>
