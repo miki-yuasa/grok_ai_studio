@@ -14,7 +14,22 @@ export default function Home() {
     const cachedStrategy = localStorage.getItem("cachedStrategy");
     if (cachedStrategy) {
       try {
-        setStrategy(JSON.parse(cachedStrategy));
+        const parsed = JSON.parse(cachedStrategy);
+        // Migrate old mediaUrl to imageUrl/videoUrl based on mediaType
+        if (parsed.posts) {
+          parsed.posts = parsed.posts.map((post: any) => {
+            if (post.mediaUrl && !post.imageUrl && !post.videoUrl) {
+              return {
+                ...post,
+                ...(post.mediaType === "image"
+                  ? { imageUrl: post.mediaUrl }
+                  : { videoUrl: post.mediaUrl }),
+              };
+            }
+            return post;
+          });
+        }
+        setStrategy(parsed);
       } catch (error) {
         console.error("Failed to parse cached strategy:", error);
         localStorage.removeItem("cachedStrategy");
@@ -34,12 +49,22 @@ export default function Home() {
     setStrategy(newStrategy);
   };
 
-  const handleMediaGenerated = (postId: string, mediaUrl: string) => {
+  const handleMediaGenerated = (
+    postId: string,
+    mediaUrl: string,
+    mediaType: "image" | "video"
+  ) => {
     if (!strategy) return;
 
     const updatedPosts = strategy.posts.map((post) =>
       post.id === postId
-        ? { ...post, mediaUrl, status: "generated" as const }
+        ? {
+            ...post,
+            ...(mediaType === "image"
+              ? { imageUrl: mediaUrl }
+              : { videoUrl: mediaUrl }),
+            status: "generated" as const,
+          }
         : post
     );
 

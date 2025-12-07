@@ -12,9 +12,13 @@ import { AdCard } from "./AdCard";
 
 interface StrategyGridProps {
   strategy: AdStrategy | null;
-  onMediaGenerated: (postId: string, mediaUrl: string) => void;
+  onMediaGenerated: (
+    postId: string,
+    mediaUrl: string,
+    mediaType: "image" | "video"
+  ) => void;
   onPostEdited: (postId: string, content: string, replyContent: string) => void;
-  onMediaPromptEdited: (postId: string, mediaPrompt: string) => void;
+  onMediaPromptEdited: (postId: string, imagePrompt: string, videoPrompt: string) => void;
 }
 
 export function StrategyGrid({
