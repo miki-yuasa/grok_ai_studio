@@ -31,9 +31,9 @@ export async function discoverCompetitors(
   try {
     // Extract company name and keywords from URL
     const keywords = extractKeywordsFromUrl(productUrl);
-    
+
     if (!keywords) {
-      console.warn('Could not extract keywords from URL for competitor search');
+      console.warn("Could not extract keywords from URL for competitor search");
       return [];
     }
 
@@ -49,12 +49,12 @@ export async function discoverCompetitors(
     );
 
     if (!response.ok) {
-      console.error('X API search failed:', await response.text());
+      console.error("X API search failed:", await response.text());
       return [];
     }
 
     const data: XSearchResponse = await response.json();
-    
+
     if (!data.data || data.data.length === 0) {
       // Fallback: Try search by keywords
       return await searchByKeywords(keywords, maxResults);
@@ -62,13 +62,16 @@ export async function discoverCompetitors(
 
     // Return top competitor handles based on follower count
     const competitors = data.data
-      .sort((a, b) => b.public_metrics.followers_count - a.public_metrics.followers_count)
+      .sort(
+        (a, b) =>
+          b.public_metrics.followers_count - a.public_metrics.followers_count
+      )
       .slice(0, maxResults)
-      .map(user => `@${user.username}`);
+      .map((user) => `@${user.username}`);
 
     return competitors;
   } catch (error) {
-    console.error('Error discovering competitors:', error);
+    console.error("Error discovering competitors:", error);
     return [];
   }
 }
@@ -84,7 +87,10 @@ async function searchByKeywords(
     // Use X API v2 search endpoint
     const searchQuery = encodeURIComponent(`${keywords} -is:retweet`);
     const response = await fetch(
-      `https://api.twitter.com/2/tweets/search/recent?query=${searchQuery}&max_results=${Math.min(maxResults * 2, 100)}&expansions=author_id&user.fields=username,public_metrics`,
+      `https://api.twitter.com/2/tweets/search/recent?query=${searchQuery}&max_results=${Math.min(
+        maxResults * 2,
+        100
+      )}&expansions=author_id&user.fields=username,public_metrics`,
       {
         headers: {
           Authorization: `Bearer ${process.env.X_API_BEARER_TOKEN}`,
@@ -97,7 +103,7 @@ async function searchByKeywords(
     }
 
     const data = await response.json();
-    
+
     if (!data.includes?.users) {
       return [];
     }
@@ -110,13 +116,16 @@ async function searchByKeywords(
 
     // Get unique handles sorted by followers
     const handles = Array.from(userMap.values())
-      .sort((a, b) => b.public_metrics.followers_count - a.public_metrics.followers_count)
+      .sort(
+        (a, b) =>
+          b.public_metrics.followers_count - a.public_metrics.followers_count
+      )
       .slice(0, maxResults)
-      .map(user => `@${user.username}`);
+      .map((user) => `@${user.username}`);
 
     return handles;
   } catch (error) {
-    console.error('Error in keyword search:', error);
+    console.error("Error in keyword search:", error);
     return [];
   }
 }
@@ -127,35 +136,35 @@ async function searchByKeywords(
 function extractKeywordsFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
-    const domain = urlObj.hostname.replace('www.', '');
-    
+    const domain = urlObj.hostname.replace("www.", "");
+
     // Extract company name from domain (e.g., "example.com" -> "example")
-    const companyName = domain.split('.')[0];
-    
+    const companyName = domain.split(".")[0];
+
     // Clean and format for search
     const keywords = companyName
-      .replace(/[-_]/g, ' ')
-      .split(' ')
-      .filter(word => word.length > 2)
-      .join(' ');
-    
+      .replace(/[-_]/g, " ")
+      .split(" ")
+      .filter((word) => word.length > 2)
+      .join(" ");
+
     return keywords || companyName;
   } catch (error) {
-    console.error('Error parsing URL:', error);
+    console.error("Error parsing URL:", error);
     return null;
   }
 }
 
 /**
- * Fetch trending topics from X
- * Note: Requires elevated access for trends endpoint
+ * Fetch trending topics from X using the Trends API
+ * Requires elevated API access
  */
 export async function getTrendingTopics(limit: number = 10): Promise<string[]> {
   try {
-    // X API v1.1 trends endpoint (requires elevated access)
-    // For MVP, we'll use a simple approach with recent popular tweets
+    // Use X API v1.1 trends endpoint with elevated access
+    // WOEID 1 = Worldwide trends
     const response = await fetch(
-      `https://api.twitter.com/2/tweets/search/recent?query=%23 -is:retweet&max_results=${limit}&tweet.fields=public_metrics`,
+      `https://api.twitter.com/1.1/trends/place.json?id=1`,
       {
         headers: {
           Authorization: `Bearer ${process.env.X_API_BEARER_TOKEN}`,
@@ -164,23 +173,29 @@ export async function getTrendingTopics(limit: number = 10): Promise<string[]> {
     );
 
     if (!response.ok) {
+      console.error(
+        "Trends API error:",
+        response.status,
+        await response.text()
+      );
       return [];
     }
 
     const data = await response.json();
-    
-    // Extract hashtags from tweets
-    const trends = new Set<string>();
-    data.data?.forEach((tweet: any) => {
-      const hashtags = tweet.text.match(/#\w+/g);
-      if (hashtags) {
-        hashtags.forEach((tag: string) => trends.add(tag));
-      }
-    });
 
-    return Array.from(trends).slice(0, limit);
+    // Extract trend names
+    if (!data[0]?.trends) {
+      return [];
+    }
+
+    const trends = data[0].trends
+      .slice(0, limit)
+      .map((trend: any) => trend.name)
+      .filter((name: string) => name && name.trim().length > 0);
+
+    return trends;
   } catch (error) {
-    console.error('Error fetching trends:', error);
+    console.error("Error fetching trends:", error);
     return [];
   }
 }
