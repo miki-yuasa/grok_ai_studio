@@ -32,21 +32,13 @@ interface AdCardProps {
     mediaUrl: string,
     mediaType: "image" | "video"
   ) => void;
-  onPostEdited: (
-    postId: string,
-    content: string,
-    replyContent: string,
-    scheduledTime?: string
-  ) => void;
+  onPostEdited: (postId: string, content: string, replyContent: string, scheduledTime?: string) => void;
   onMediaPromptEdited: (
     postId: string,
     imagePrompt: string,
     videoPrompt: string
   ) => void;
-  onPostStatusChanged?: (
-    postId: string,
-    status: "draft" | "generated" | "posted"
-  ) => void;
+  onPostStatusChanged?: (postId: string, status: "draft" | "generated" | "posted") => void;
 }
 
 export function AdCard({
@@ -75,9 +67,7 @@ export function AdCard({
   const [editedVideoPrompt, setEditedVideoPrompt] = useState(
     post.videoPrompt || post.mediaPrompt
   );
-  const [editedScheduledTime, setEditedScheduledTime] = useState(
-    post.scheduledTime
-  );
+  const [editedScheduledTime, setEditedScheduledTime] = useState(post.scheduledTime);
   const [timeError, setTimeError] = useState("");
 
   // Convert ISO string to datetime-local format
@@ -189,12 +179,7 @@ export function AdCard({
         return; // Don't save if time is invalid
       }
     }
-    onPostEdited(
-      post.id,
-      editedContent,
-      editedReplyContent,
-      editedScheduledTime
-    );
+    onPostEdited(post.id, editedContent, editedReplyContent, editedScheduledTime);
     setIsEditing(false);
     setTimeError("");
   };
@@ -239,7 +224,7 @@ export function AdCard({
       }
 
       const data = await response.json();
-
+      
       // Update post status
       if (onPostStatusChanged) {
         onPostStatusChanged(post.id, "posted");
@@ -252,12 +237,6 @@ export function AdCard({
     } finally {
       setIsPosting(false);
     }
-    setIsEditing(false);
-  };
-
-  const handleRegenerateMedia = (mediaType: "image" | "video") => {
-    // Regenerate with current prompt without clearing
-    handleGenerateMedia(mediaType);
   };
 
   return (
@@ -593,10 +572,7 @@ export function AdCard({
                 )}
               </Button>
             ) : (
-              <Badge
-                variant="outline"
-                className="bg-green-50 text-green-700 border-green-300"
-              >
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
                 ✓ Posted
               </Badge>
             )}
