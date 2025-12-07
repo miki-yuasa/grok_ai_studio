@@ -20,6 +20,7 @@ interface InputFormProps {
 
 export function InputForm({ onStrategyGenerated }: InputFormProps) {
   const [productUrl, setProductUrl] = useState("");
+  const [budget, setBudget] = useState("");
   const [competitorHandles, setCompetitorHandles] = useState("");
   const [trendContext, setTrendContext] = useState("");
   const [targetMarket, setTargetMarket] = useState("");
@@ -87,6 +88,7 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
         },
         body: JSON.stringify({
           productUrl,
+          budget: parseFloat(budget),
           competitorHandles: competitorHandles || undefined,
           trendContext: trendContext || undefined,
           targetMarket: targetMarket || undefined,
@@ -133,6 +135,29 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
               onChange={(e) => setProductUrl(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="budget">Campaign Budget (USD) *</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                $
+              </span>
+              <Input
+                id="budget"
+                type="number"
+                placeholder="1000"
+                min="1"
+                step="0.01"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                required
+                className="pl-7"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total budget for this campaign - used to calculate predicted impressions, traffic, and conversions
+            </p>
           </div>
 
           <div className="flex justify-center">

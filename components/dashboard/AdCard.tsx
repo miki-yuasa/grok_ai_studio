@@ -24,6 +24,7 @@ import {
   X,
   Send,
 } from "lucide-react";
+import { formatNumber } from "@/lib/metrics";
 
 interface AdCardProps {
   post: AdPost;
@@ -269,11 +270,42 @@ export function AdCard({
                 </CardDescription>
               </div>
             )}
-            <div className="flex items-center gap-2 mt-2">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-semibold text-green-600">
-                Predicted CTR: {post.predictedCTR}
-              </span>
+            {/* Prediction Metrics */}
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-semibold text-green-600">
+                  Predicted CTR: {post.predictedCTR}
+                </span>
+              </div>
+              {post.predictedCPM && post.predictedCVR && (
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div>CPM: {post.predictedCPM}</div>
+                  <div>CVR: {post.predictedCVR}</div>
+                </div>
+              )}
+              {post.calculatedImpressions && (
+                <div className="border-t pt-2 space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Impressions:</span>
+                    <span className="font-medium">
+                      {formatNumber(post.calculatedImpressions)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Clicks:</span>
+                    <span className="font-medium">
+                      {formatNumber(post.calculatedClicks || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Conversions:</span>
+                    <span className="font-medium">
+                      {(post.calculatedConversions || 0).toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           {/* Edit/Save Controls */}

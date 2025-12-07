@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AdCard } from "./AdCard";
+import { formatNumber, formatPercentage, formatCurrency } from "@/lib/metrics";
 
 interface StrategyGridProps {
   strategy: AdStrategy | null;
@@ -17,13 +18,21 @@ interface StrategyGridProps {
     mediaUrl: string,
     mediaType: "image" | "video"
   ) => void;
-  onPostEdited: (postId: string, content: string, replyContent: string, scheduledTime?: string) => void;
+  onPostEdited: (
+    postId: string,
+    content: string,
+    replyContent: string,
+    scheduledTime?: string
+  ) => void;
   onMediaPromptEdited: (
     postId: string,
     imagePrompt: string,
     videoPrompt: string
   ) => void;
-  onPostStatusChanged?: (postId: string, status: "draft" | "generated" | "posted") => void;
+  onPostStatusChanged?: (
+    postId: string,
+    status: "draft" | "generated" | "posted"
+  ) => void;
 }
 
 export function StrategyGrid({
@@ -56,11 +65,75 @@ export function StrategyGrid({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">Strategy Summary</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {strategy.strategySummary}
-            </p>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium">Strategy Summary</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {strategy.strategySummary}
+              </p>
+            </div>
+
+            {/* Campaign Metrics */}
+            {strategy.budget && (
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium mb-3">
+                  Campaign Performance Predictions
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Budget</p>
+                    <p className="text-lg font-semibold">
+                      {formatCurrency(strategy.budget)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Total Impressions
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {formatNumber(strategy.totalImpressions || 0)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Total Traffic
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {formatNumber(strategy.totalTraffic || 0)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Total Conversions
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {(strategy.totalConversions || 0).toFixed(1)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Effective CTR
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {formatPercentage(strategy.effectiveCTR || 0)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Effective CVR
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {formatPercentage(strategy.effectiveCVR || 0)}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  * Predictions based on even budget split across all posts.
+                  Effective rates are weighted campaign averages (uniform
+                  weights for demo).
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

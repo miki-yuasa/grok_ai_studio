@@ -6,12 +6,14 @@ import {
 } from "@/lib/grok";
 import { AdStrategy, StrategyRequest } from "@/lib/types";
 import { discoverCompetitors, getTrendingTopics } from "@/lib/x-api";
+import { calculateCampaignMetrics } from "@/lib/metrics";
 
 export async function POST(request: NextRequest) {
   try {
     const body: StrategyRequest = await request.json();
     let {
       productUrl,
+      budget,
       competitorHandles,
       trendContext,
       targetMarket,
@@ -22,6 +24,13 @@ export async function POST(request: NextRequest) {
     if (!productUrl) {
       return NextResponse.json(
         { error: "Product URL is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!budget || budget <= 0) {
+      return NextResponse.json(
+        { error: "Valid budget is required" },
         { status: 400 }
       );
     }
@@ -64,6 +73,7 @@ export async function POST(request: NextRequest) {
     const userPrompt = `Generate a comprehensive viral marketing strategy for X (Twitter) with the following parameters:
 
 Product/Company URL: ${productUrl}
+Campaign Budget: $${budget.toLocaleString()} USD
 ${
   targetMarket
     ? `Target Market/Audience: ${targetMarket}`
@@ -114,6 +124,8 @@ Output the strategy as valid JSON matching this exact schema:
       "mediaType": "image" or "video",
       "mediaPrompt": "Detailed prompt for the AI generator (photorealistic for images, motion details for videos)",
       "predictedCTR": "e.g. 3.1%",
+      "predictedCPM": "e.g. $5.50 - Estimate the Cost Per Mille (cost per 1000 impressions) for X ads in this niche/audience. Consider factors like: competition level, audience specificity, media type (image vs video), time of year, and target demographics. Typical X CPM ranges: $2-$8 for broad audiences, $5-$15 for niche targeting, $10-$25 for highly competitive niches.",
+      "predictedCVR": "e.g. 1.2% - Estimate the Conversion Rate (percentage of clicks that convert). Consider: product price point, landing page quality assumptions, offer strength, audience intent level, and industry benchmarks. Typical CVR ranges: 0.5-2% for cold traffic, 2-5% for warm audiences, 5-15% for retargeting or highly qualified traffic.",
       "rationale": "Detailed reasoning: 'I chose this angle because [Trend X] is peaking, and it highlights [Feature Y].'",
       "status": "draft"
     }
@@ -147,6 +159,10 @@ Output the strategy as valid JSON matching this exact schema:
         { status: 500 }
       );
     }
+
+    // Add budget to strategy and calculate all metrics
+    strategy.budget = budget;
+    strategy = calculateCampaignMetrics(strategy);
 
     return NextResponse.json(strategy);
   } catch (error) {
