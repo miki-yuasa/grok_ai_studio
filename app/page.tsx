@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   const [strategy, setStrategy] = useState<AdStrategy | null>(null);
   const [isClearing, setIsClearing] = useState(false);
-  const [clearMessage, setClearMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [clearMessage, setClearMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // Load cached strategy on mount
   useEffect(() => {
@@ -219,7 +222,11 @@ export default function Home() {
   };
 
   const handleClearAllPosts = async () => {
-    if (!confirm("Are you sure you want to delete all posts? This cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete all posts? This cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -237,13 +244,22 @@ export default function Home() {
         // Clear the strategy from state and localStorage
         setStrategy(null);
         localStorage.removeItem("cachedStrategy");
-        setClearMessage({ type: "success", text: "All posts cleared successfully!" });
+        setClearMessage({
+          type: "success",
+          text: "All posts cleared successfully!",
+        });
       } else {
-        setClearMessage({ type: "error", text: data.error || "Failed to clear posts" });
+        setClearMessage({
+          type: "error",
+          text: data.error || "Failed to clear posts",
+        });
       }
     } catch (error) {
       console.error("Failed to clear all posts:", error);
-      setClearMessage({ type: "error", text: "Failed to clear posts. Please try again." });
+      setClearMessage({
+        type: "error",
+        text: "Failed to clear posts. Please try again.",
+      });
     } finally {
       setIsClearing(false);
       // Clear message after 5 seconds
