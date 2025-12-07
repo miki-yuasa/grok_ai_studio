@@ -6,7 +6,10 @@ export async function POST(request: NextRequest) {
   console.log("🎬 [VIDEO API] POST request received");
   try {
     const body: VideoGenerationRequest = await request.json();
-    console.log("🎬 [VIDEO API] Request body parsed:", JSON.stringify(body, null, 2));
+    console.log(
+      "🎬 [VIDEO API] Request body parsed:",
+      JSON.stringify(body, null, 2)
+    );
     const { prompt } = body;
     console.log("🎬 [VIDEO API] Extracted prompt:", prompt);
 
@@ -18,7 +21,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("🎬 [VIDEO API] Calling generateVideoWithVeo with prompt:", prompt);
+    console.log(
+      "🎬 [VIDEO API] Calling generateVideoWithVeo with prompt:",
+      prompt
+    );
     // Generate video concept using Google Veo
     const result = await generateVideoWithVeo(prompt);
     console.log("🎬 [VIDEO API] generateVideoWithVeo returned:", {
