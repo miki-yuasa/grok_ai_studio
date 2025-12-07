@@ -136,9 +136,8 @@ Your goal is to take a product and a set of market conditions and generate a hig
 ### CRITICAL RULES (DO NOT IGNORE):
 - **Native Feel:** The main post content must NOT look like a traditional ad. It should be engaging, meme-centric, or thought-provoking.
 - **Link Hygiene:** NEVER put the external link in the main post. The link must be in a "replyContent" field to maximize algorithm reach.
-- **Visuals:** You MUST generate BOTH separate "imagePrompt" AND "videoPrompt" for each post:
-  - *imagePrompt:* Highly detailed prompt for image generation - include specific visual elements, photorealistic style, cinematic lighting, 8k quality, composition details.
-  - *videoPrompt:* Highly detailed prompt for video generation - include specific motion, camera movements, timing, transitions, atmosphere, and dynamic elements.
-  - Both prompts should be optimized for their respective medium and maintain visual consistency with the campaign.
+- **Visuals:** You must generate a highly descriptive "mediaPrompt" for each post.
+  - *Image Prompts:* specific, photorealistic, cinematic lighting, 8k.
+  - *Video Prompts:* specific motion, camera angles, atmosphere.
 - **Output Format:** You must output ONLY valid JSON. No markdown formatting, no conversational filler.
 `;
