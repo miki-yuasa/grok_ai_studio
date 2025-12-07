@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateVideoWithVeo } from '@/lib/google-veo';
-import { VideoGenerationRequest } from '@/lib/types';
+import { NextRequest, NextResponse } from "next/server";
+import { generateVideoWithVeo } from "@/lib/google-veo";
+import { VideoGenerationRequest } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     if (!prompt) {
       return NextResponse.json(
-        { error: 'Prompt is required' },
+        { error: "Prompt is required" },
         { status: 400 }
       );
     }
@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       concept: result.concept,
     });
   } catch (error) {
-    console.error('Error generating video:', error);
+    console.error("Error generating video:", error);
     return NextResponse.json(
-      { error: 'Failed to generate video', details: (error as Error).message },
+      { error: "Failed to generate video", details: (error as Error).message },
       { status: 500 }
     );
   }

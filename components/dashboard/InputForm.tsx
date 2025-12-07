@@ -1,34 +1,40 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface InputFormProps {
   onStrategyGenerated: (strategy: any) => void;
 }
 
 export function InputForm({ onStrategyGenerated }: InputFormProps) {
-  const [productUrl, setProductUrl] = useState('');
-  const [competitorHandles, setCompetitorHandles] = useState('');
-  const [trendContext, setTrendContext] = useState('');
+  const [productUrl, setProductUrl] = useState("");
+  const [competitorHandles, setCompetitorHandles] = useState("");
+  const [trendContext, setTrendContext] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/generate-strategy', {
-        method: 'POST',
+      const response = await fetch("/api/generate-strategy", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           productUrl,
@@ -39,7 +45,7 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate strategy');
+        throw new Error(errorData.error || "Failed to generate strategy");
       }
 
       const strategy = await response.json();
@@ -56,7 +62,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
       <CardHeader>
         <CardTitle>Generate Your Ad Campaign</CardTitle>
         <CardDescription>
-          Provide details about your product and target market to generate a viral marketing strategy
+          Provide details about your product and target market to generate a
+          viral marketing strategy
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -74,7 +81,9 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="competitorHandles">Competitor Handles (Optional)</Label>
+            <Label htmlFor="competitorHandles">
+              Competitor Handles (Optional)
+            </Label>
             <Input
               id="competitorHandles"
               type="text"
@@ -88,7 +97,9 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="trendContext">Current Trend Context (Optional)</Label>
+            <Label htmlFor="trendContext">
+              Current Trend Context (Optional)
+            </Label>
             <Textarea
               id="trendContext"
               placeholder="Describe current trending topics, viral content patterns, or market dynamics..."
@@ -97,7 +108,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
               rows={4}
             />
             <p className="text-xs text-muted-foreground">
-              Add context about trending topics to help generate more relevant campaigns
+              Add context about trending topics to help generate more relevant
+              campaigns
             </p>
           </div>
 
@@ -114,7 +126,7 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
                 Generating Strategy...
               </>
             ) : (
-              'Generate Strategy'
+              "Generate Strategy"
             )}
           </Button>
         </form>

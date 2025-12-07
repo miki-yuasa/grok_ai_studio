@@ -13,11 +13,11 @@ export interface AdPost {
   scheduledTime: string; // ISO format
   content: string; // The main tweet text (engaging hook, no links)
   replyContent: string; // Follow-up tweet with CTA and link
-  mediaType: 'image' | 'video';
+  mediaType: "image" | "video";
   mediaPrompt: string; // Unified prompt for image or video generation
   predictedCTR: string; // e.g., "2.5%"
   rationale: string; // Detailed reasoning chain
-  status: 'draft' | 'generated' | 'posted';
+  status: "draft" | "generated" | "posted";
   mediaUrl?: string; // Result from API
 }
 
@@ -29,7 +29,7 @@ export interface StrategyRequest {
 
 export interface ImageGenerationRequest {
   prompt: string;
-  quality?: 'high' | 'standard';
+  quality?: "high" | "standard";
 }
 
 export interface ImageGenerationResponse {

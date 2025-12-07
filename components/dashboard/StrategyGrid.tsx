@@ -1,15 +1,24 @@
-'use client';
+"use client";
 
-import { AdStrategy } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AdCard } from './AdCard';
+import { AdStrategy } from "@/lib/types";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AdCard } from "./AdCard";
 
 interface StrategyGridProps {
   strategy: AdStrategy | null;
   onMediaGenerated: (postId: string, mediaUrl: string) => void;
 }
 
-export function StrategyGrid({ strategy, onMediaGenerated }: StrategyGridProps) {
+export function StrategyGrid({
+  strategy,
+  onMediaGenerated,
+}: StrategyGridProps) {
   if (!strategy) {
     return (
       <Card>
@@ -28,7 +37,9 @@ export function StrategyGrid({ strategy, onMediaGenerated }: StrategyGridProps) 
       <Card>
         <CardHeader>
           <CardTitle>Campaign Strategy</CardTitle>
-          <CardDescription>Target Audience: {strategy.targetAudience}</CardDescription>
+          <CardDescription>
+            Target Audience: {strategy.targetAudience}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -42,12 +53,14 @@ export function StrategyGrid({ strategy, onMediaGenerated }: StrategyGridProps) 
 
       {/* Posts Grid */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Campaign Posts ({strategy.posts.length})</h3>
+        <h3 className="text-lg font-semibold">
+          Campaign Posts ({strategy.posts.length})
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {strategy.posts.map((post) => (
-            <AdCard 
-              key={post.id} 
-              post={post} 
+            <AdCard
+              key={post.id}
+              post={post}
               onMediaGenerated={onMediaGenerated}
             />
           ))}

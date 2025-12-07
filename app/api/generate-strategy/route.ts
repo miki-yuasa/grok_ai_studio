@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateWithGrok, STRATEGY_SYSTEM_PROMPT } from '@/lib/grok';
-import { AdStrategy, StrategyRequest } from '@/lib/types';
+import { NextRequest, NextResponse } from "next/server";
+import { generateWithGrok, STRATEGY_SYSTEM_PROMPT } from "@/lib/grok";
+import { AdStrategy, StrategyRequest } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     if (!productUrl) {
       return NextResponse.json(
-        { error: 'Product URL is required' },
+        { error: "Product URL is required" },
         { status: 400 }
       );
     }
@@ -18,8 +18,16 @@ export async function POST(request: NextRequest) {
     const userPrompt = `Generate a comprehensive viral marketing strategy for X (Twitter) with the following parameters:
 
 Product/Company URL: ${productUrl}
-${competitorHandles ? `Competitor Handles: ${competitorHandles}` : 'Competitor Handles: Not provided'}
-${trendContext ? `Current Trend Context: ${trendContext}` : 'Current Trend Context: Analyze current viral trends on X'}
+${
+  competitorHandles
+    ? `Competitor Handles: ${competitorHandles}`
+    : "Competitor Handles: Not provided"
+}
+${
+  trendContext
+    ? `Current Trend Context: ${trendContext}`
+    : "Current Trend Context: Analyze current viral trends on X"
+}
 
 Output the strategy as valid JSON matching this exact schema:
 {
@@ -51,22 +59,27 @@ Output the strategy as valid JSON matching this exact schema:
     let strategy: AdStrategy;
     try {
       // Extract JSON from markdown code blocks if present
-      const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || response.match(/```\n([\s\S]*?)\n```/);
+      const jsonMatch =
+        response.match(/```json\n([\s\S]*?)\n```/) ||
+        response.match(/```\n([\s\S]*?)\n```/);
       const jsonString = jsonMatch ? jsonMatch[1] : response;
       strategy = JSON.parse(jsonString);
     } catch (parseError) {
-      console.error('Failed to parse strategy JSON:', parseError);
+      console.error("Failed to parse strategy JSON:", parseError);
       return NextResponse.json(
-        { error: 'Failed to parse strategy response', details: response },
+        { error: "Failed to parse strategy response", details: response },
         { status: 500 }
       );
     }
 
     return NextResponse.json(strategy);
   } catch (error) {
-    console.error('Error generating strategy:', error);
+    console.error("Error generating strategy:", error);
     return NextResponse.json(
-      { error: 'Failed to generate strategy', details: (error as Error).message },
+      {
+        error: "Failed to generate strategy",
+        details: (error as Error).message,
+      },
       { status: 500 }
     );
   }

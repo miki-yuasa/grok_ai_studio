@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { AdPost } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Image, Video, Loader2, TrendingUp } from 'lucide-react';
+import { useState } from "react";
+import { AdPost } from "@/lib/types";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Image, Video, Loader2, TrendingUp } from "lucide-react";
 
 interface AdCardProps {
   post: AdPost;
@@ -14,32 +20,33 @@ interface AdCardProps {
 
 export function AdCard({ post, onMediaGenerated }: AdCardProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleGenerateMedia = async () => {
     setIsGenerating(true);
-    setError('');
+    setError("");
 
     try {
-      const endpoint = post.mediaType === 'image' 
-        ? '/api/generate-image'
-        : '/api/generate-video';
+      const endpoint =
+        post.mediaType === "image"
+          ? "/api/generate-image"
+          : "/api/generate-video";
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ prompt: post.mediaPrompt }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate media');
+        throw new Error(errorData.error || "Failed to generate media");
       }
 
       const data = await response.json();
-      const mediaUrl = post.mediaType === 'image' ? data.url : data.videoUrl;
+      const mediaUrl = post.mediaType === "image" ? data.url : data.videoUrl;
       onMediaGenerated(post.id, mediaUrl);
     } catch (err) {
       setError((err as Error).message);
@@ -50,11 +57,11 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -65,7 +72,9 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <CardDescription>{formatDate(post.scheduledTime)}</CardDescription>
+              <CardDescription>
+                {formatDate(post.scheduledTime)}
+              </CardDescription>
             </div>
             <div className="flex items-center gap-2 mt-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -74,11 +83,15 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
               </span>
             </div>
           </div>
-          <Badge variant={post.mediaType === 'image' ? 'default' : 'secondary'}>
-            {post.mediaType === 'image' ? (
-              <><Image className="h-3 w-3 mr-1" /> Image</>
+          <Badge variant={post.mediaType === "image" ? "default" : "secondary"}>
+            {post.mediaType === "image" ? (
+              <>
+                <Image className="h-3 w-3 mr-1" /> Image
+              </>
             ) : (
-              <><Video className="h-3 w-3 mr-1" /> Video</>
+              <>
+                <Video className="h-3 w-3 mr-1" /> Video
+              </>
             )}
           </Badge>
         </div>
@@ -113,9 +126,9 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
           <h4 className="text-sm font-medium">Visual Asset</h4>
           {post.mediaUrl ? (
             <div className="rounded-md overflow-hidden border">
-              {post.mediaType === 'image' ? (
-                <img 
-                  src={post.mediaUrl} 
+              {post.mediaType === "image" ? (
+                <img
+                  src={post.mediaUrl}
                   alt="Generated ad visual"
                   className="w-full h-48 object-cover"
                 />
@@ -126,8 +139,8 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
               )}
             </div>
           ) : (
-            <Button 
-              onClick={handleGenerateMedia} 
+            <Button
+              onClick={handleGenerateMedia}
               disabled={isGenerating}
               className="w-full"
               variant="outline"
@@ -139,7 +152,7 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
                 </>
               ) : (
                 <>
-                  {post.mediaType === 'image' ? (
+                  {post.mediaType === "image" ? (
                     <Image className="mr-2 h-4 w-4" />
                   ) : (
                     <Video className="mr-2 h-4 w-4" />
@@ -149,9 +162,7 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
               )}
             </Button>
           )}
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
-          )}
+          {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
 
         {/* Prompt Preview */}

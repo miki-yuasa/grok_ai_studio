@@ -2,12 +2,12 @@
  * Grok API utilities for text generation and image generation
  */
 
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 // Initialize Grok client using OpenAI SDK compatibility
 export const grokClient = new OpenAI({
   apiKey: process.env.XAI_API_KEY,
-  baseURL: 'https://api.x.ai/v1',
+  baseURL: "https://api.x.ai/v1",
 });
 
 /**
@@ -19,15 +19,15 @@ export async function generateWithGrok(
   temperature: number = 0.7
 ): Promise<string> {
   const completion = await grokClient.chat.completions.create({
-    model: 'grok-beta',
+    model: "grok-beta",
     messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
     ],
     temperature,
   });
 
-  return completion.choices[0]?.message?.content || '';
+  return completion.choices[0]?.message?.content || "";
 }
 
 /**
@@ -36,19 +36,19 @@ export async function generateWithGrok(
  */
 export async function generateImageWithGrok(
   prompt: string,
-  quality: 'high' | 'standard' = 'high'
+  quality: "high" | "standard" = "high"
 ): Promise<{ url: string; revisedPrompt?: string }> {
-  const response = await fetch('https://api.x.ai/v1/images/generations', {
-    method: 'POST',
+  const response = await fetch("https://api.x.ai/v1/images/generations", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.XAI_API_KEY}`,
     },
     body: JSON.stringify({
       prompt,
-      model: 'grok-imagine-v0p9',
+      model: "grok-imagine-v0p9",
       quality,
-      response_format: 'url',
+      response_format: "url",
     }),
   });
 
