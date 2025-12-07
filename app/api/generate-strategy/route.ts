@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateWithGrok, STRATEGY_SYSTEM_PROMPT } from "@/lib/grok";
+import {
+  generateWithGrok,
+  generateWithGrokVision,
+  STRATEGY_SYSTEM_PROMPT,
+} from "@/lib/grok";
 import { AdStrategy, StrategyRequest } from "@/lib/types";
 import { discoverCompetitors, getTrendingTopics } from "@/lib/x-api";
 
 export async function POST(request: NextRequest) {
   try {
     const body: StrategyRequest = await request.json();
-    let { productUrl, competitorHandles, trendContext } = body;
+    let {
+      productUrl,
+      competitorHandles,
+      trendContext,
+      targetMarket,
+      campaignDetails,
+      supplementaryImages,
+    } = body;
 
     if (!productUrl) {
       return NextResponse.json(
@@ -54,6 +65,16 @@ export async function POST(request: NextRequest) {
 
 Product/Company URL: ${productUrl}
 ${
+  targetMarket
+    ? `Target Market/Audience: ${targetMarket}`
+    : "Target Market/Audience: Analyze and determine the best target audience"
+}
+${
+  campaignDetails
+    ? `Campaign Details: ${campaignDetails}`
+    : "Campaign Details: Design an engaging viral campaign"
+}
+${
   competitorHandles
     ? `Competitor Handles (${
         competitorHandles.split(",").length > 3
@@ -67,11 +88,22 @@ ${
     ? `Current Trend Context: ${trendContext}`
     : "Current Trend Context: Analyze current viral trends on X"
 }
+${
+  supplementaryImages && supplementaryImages.length > 0
+    ? `\n\nSupplementary Images: ${supplementaryImages.length} product/service image(s) have been provided above. Analyze these images to understand the product's visual identity, features, and aesthetic. Use insights from these images to create more targeted and visually coherent ad campaigns.`
+    : ""
+}
+
+IMPORTANT: Your "strategySummary" MUST incorporate and reference the specific details provided above:
+- If Target Market/Audience is provided, explicitly mention WHO you're targeting
+- If Campaign Details are provided, explicitly reference the campaign goals/context
+- If Supplementary Images are analyzed, mention key visual elements or product features discovered
+- Connect these specific elements to your chosen viral angle
 
 Output the strategy as valid JSON matching this exact schema:
 {
-  "strategySummary": "A 2-sentence overview of the campaign angle.",
-  "targetAudience": "Specific sub-culture or demographic.",
+  "strategySummary": "A 2-sentence overview that EXPLICITLY references the provided target audience (if any), campaign details (if any), and explains the core viral angle being used.",
+  "targetAudience": "Specific sub-culture or demographic (use provided target market if available, otherwise infer).",
   "posts": [
     {
       "id": "post_1",
@@ -87,12 +119,16 @@ Output the strategy as valid JSON matching this exact schema:
   ]
 }`;
 
-    // Generate strategy using Grok
-    const response = await generateWithGrok(
-      STRATEGY_SYSTEM_PROMPT,
-      userPrompt,
-      0.7
-    );
+    // Generate strategy using Grok (with vision if images are provided)
+    const response =
+      supplementaryImages && supplementaryImages.length > 0
+        ? await generateWithGrokVision(
+            STRATEGY_SYSTEM_PROMPT,
+            userPrompt,
+            supplementaryImages,
+            0.7
+          )
+        : await generateWithGrok(STRATEGY_SYSTEM_PROMPT, userPrompt, 0.7);
 
     // Parse the JSON response
     let strategy: AdStrategy;

@@ -14,17 +14,24 @@ export interface AdPost {
   content: string; // The main tweet text (engaging hook, no links)
   replyContent: string; // Follow-up tweet with CTA and link
   mediaType: "image" | "video";
-  mediaPrompt: string; // Unified prompt for image or video generation
+  mediaPrompt: string; // Unified prompt for image or video generation (deprecated)
+  imagePrompt?: string; // Specific prompt for image generation
+  videoPrompt?: string; // Specific prompt for video generation
   predictedCTR: string; // e.g., "2.5%"
   rationale: string; // Detailed reasoning chain
   status: "draft" | "generated" | "posted";
-  mediaUrl?: string; // Result from API
+  mediaUrl?: string; // Result from API (deprecated, use imageUrl/videoUrl)
+  imageUrl?: string; // Generated image URL
+  videoUrl?: string; // Generated video URL
 }
 
 export interface StrategyRequest {
   productUrl: string;
   competitorHandles?: string;
   trendContext?: string;
+  targetMarket?: string;
+  campaignDetails?: string;
+  supplementaryImages?: string[];
 }
 
 export interface ImageGenerationRequest {

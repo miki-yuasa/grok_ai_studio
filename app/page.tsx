@@ -14,7 +14,32 @@ export default function Home() {
     const cachedStrategy = localStorage.getItem("cachedStrategy");
     if (cachedStrategy) {
       try {
-        setStrategy(JSON.parse(cachedStrategy));
+        const parsed = JSON.parse(cachedStrategy);
+        // Migrate old mediaUrl to imageUrl/videoUrl based on mediaType
+        // Migrate old mediaPrompt to imagePrompt/videoPrompt
+        if (parsed.posts) {
+          parsed.posts = parsed.posts.map((post: any) => {
+            const migrated = { ...post };
+
+            // Migrate mediaUrl
+            if (post.mediaUrl && !post.imageUrl && !post.videoUrl) {
+              if (post.mediaType === "image") {
+                migrated.imageUrl = post.mediaUrl;
+              } else {
+                migrated.videoUrl = post.mediaUrl;
+              }
+            }
+
+            // Migrate mediaPrompt to both image and video prompts if not already set
+            if (post.mediaPrompt && !post.imagePrompt && !post.videoPrompt) {
+              migrated.imagePrompt = post.mediaPrompt;
+              migrated.videoPrompt = post.mediaPrompt;
+            }
+
+            return migrated;
+          });
+        }
+        setStrategy(parsed);
       } catch (error) {
         console.error("Failed to parse cached strategy:", error);
         localStorage.removeItem("cachedStrategy");
@@ -34,12 +59,22 @@ export default function Home() {
     setStrategy(newStrategy);
   };
 
-  const handleMediaGenerated = (postId: string, mediaUrl: string) => {
+  const handleMediaGenerated = (
+    postId: string,
+    mediaUrl: string,
+    mediaType: "image" | "video"
+  ) => {
     if (!strategy) return;
 
     const updatedPosts = strategy.posts.map((post) =>
       post.id === postId
-        ? { ...post, mediaUrl, status: "generated" as const }
+        ? {
+            ...post,
+            ...(mediaType === "image"
+              ? { imageUrl: mediaUrl }
+              : { videoUrl: mediaUrl }),
+            status: "generated" as const,
+          }
         : post
     );
 
@@ -58,6 +93,23 @@ export default function Home() {
 
     const updatedPosts = strategy.posts.map((post) =>
       post.id === postId ? { ...post, content, replyContent } : post
+    );
+
+    setStrategy({
+      ...strategy,
+      posts: updatedPosts,
+    });
+  };
+
+  const handleMediaPromptEdited = (
+    postId: string,
+    imagePrompt: string,
+    videoPrompt: string
+  ) => {
+    if (!strategy) return;
+
+    const updatedPosts = strategy.posts.map((post) =>
+      post.id === postId ? { ...post, imagePrompt, videoPrompt } : post
     );
 
     setStrategy({
@@ -90,6 +142,7 @@ export default function Home() {
             strategy={strategy}
             onMediaGenerated={handleMediaGenerated}
             onPostEdited={handlePostEdited}
+            onMediaPromptEdited={handleMediaPromptEdited}
           />
         </div>
 
