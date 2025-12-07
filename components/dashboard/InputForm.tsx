@@ -93,10 +93,7 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
           trendContext: trendContext || undefined,
           targetMarket: targetMarket || undefined,
           campaignDetails: campaignDetails || undefined,
-          supplementaryImages:
-            imageData.length > 0
-              ? imageData
-              : undefined,
+          supplementaryImages: imageData.length > 0 ? imageData : undefined,
         }),
       });
 
@@ -156,7 +153,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Total budget for this campaign - used to calculate predicted impressions, traffic, and conversions
+              Total budget for this campaign - used to calculate predicted
+              impressions, traffic, and conversions
             </p>
           </div>
 

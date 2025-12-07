@@ -25,7 +25,7 @@ function parseCurrency(currencyStr: string): number {
 
 /**
  * Calculate per-post metrics using vector calculation
- * 
+ *
  * For each post i:
  * - Budget allocation: B_i = Total Budget / N posts (even split)
  * - Predicted Impressions: Imp_i = (B_i / CPM_i) × 1,000
@@ -60,12 +60,12 @@ export function calculatePostMetrics(
 
 /**
  * Calculate campaign-level aggregated metrics
- * 
+ *
  * Campaign totals:
  * - Total Traffic = Σ Clk_i
  * - Total Conversions = Σ Conv_i
  * - Total Impressions = Σ Imp_i
- * 
+ *
  * Campaign effective rates (weighted averages):
  * - Effective CTR = Total Traffic / Total Impressions
  * - Effective CVR = Total Conversions / Total Traffic
@@ -129,7 +129,10 @@ export function formatNumber(num: number): string {
 /**
  * Format percentage
  */
-export function formatPercentage(decimal: number, decimals: number = 2): string {
+export function formatPercentage(
+  decimal: number,
+  decimals: number = 2
+): string {
   return `${(decimal * 100).toFixed(decimals)}%`;
 }
 
