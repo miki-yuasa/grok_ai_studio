@@ -133,9 +133,17 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
                   className="w-full h-48 object-cover"
                 />
               ) : (
-                <div className="w-full h-48 bg-muted flex items-center justify-center">
-                  <Video className="h-12 w-12 text-muted-foreground" />
-                </div>
+                <video
+                  src={post.mediaUrl}
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-48 object-cover"
+                >
+                  Your browser does not support the video tag.
+                </video>
               )}
             </div>
           ) : (
