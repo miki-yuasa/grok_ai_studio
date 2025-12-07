@@ -37,9 +37,13 @@ interface PostPrediction {
   id: string;
   content: string;
   predictedCTR: string;
+  predictedCVR?: string;
   estimatedCPM?: number;
   estimatedCVR?: number;
   ctrReasoning?: string;
+  calculatedImpressions?: number;
+  calculatedClicks?: number;
+  calculatedConversions?: number;
 }
 
 export default function BudgetPredictions() {
