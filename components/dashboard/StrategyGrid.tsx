@@ -17,12 +17,13 @@ interface StrategyGridProps {
     mediaUrl: string,
     mediaType: "image" | "video"
   ) => void;
-  onPostEdited: (postId: string, content: string, replyContent: string) => void;
+  onPostEdited: (postId: string, content: string, replyContent: string, scheduledTime?: string) => void;
   onMediaPromptEdited: (
     postId: string,
     imagePrompt: string,
     videoPrompt: string
   ) => void;
+  onPostStatusChanged?: (postId: string, status: "draft" | "generated" | "posted") => void;
 }
 
 export function StrategyGrid({
@@ -30,6 +31,7 @@ export function StrategyGrid({
   onMediaGenerated,
   onPostEdited,
   onMediaPromptEdited,
+  onPostStatusChanged,
 }: StrategyGridProps) {
   if (!strategy) {
     return (
@@ -76,6 +78,7 @@ export function StrategyGrid({
               onMediaGenerated={onMediaGenerated}
               onPostEdited={onPostEdited}
               onMediaPromptEdited={onMediaPromptEdited}
+              onPostStatusChanged={onPostStatusChanged}
             />
           ))}
         </div>

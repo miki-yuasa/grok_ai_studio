@@ -7,13 +7,14 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Calendar,
+  Clock,
   Image,
   Video,
   Loader2,
@@ -21,6 +22,7 @@ import {
   Edit2,
   Save,
   X,
+  Send,
 } from "lucide-react";
 
 interface AdCardProps {
@@ -30,11 +32,20 @@ interface AdCardProps {
     mediaUrl: string,
     mediaType: "image" | "video"
   ) => void;
-  onPostEdited: (postId: string, content: string, replyContent: string) => void;
+  onPostEdited: (
+    postId: string,
+    content: string,
+    replyContent: string,
+    scheduledTime?: string
+  ) => void;
   onMediaPromptEdited: (
     postId: string,
     imagePrompt: string,
     videoPrompt: string
+  ) => void;
+  onPostStatusChanged?: (
+    postId: string,
+    status: "draft" | "generated" | "posted"
   ) => void;
 }
 
@@ -43,14 +54,17 @@ export function AdCard({
   onMediaGenerated,
   onPostEdited,
   onMediaPromptEdited,
+  onPostStatusChanged,
 }: AdCardProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingImagePrompt, setIsEditingImagePrompt] = useState(false);
   const [isEditingVideoPrompt, setIsEditingVideoPrompt] = useState(false);
   const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [showVideoPrompt, setShowVideoPrompt] = useState(false);
+  const [showRationale, setShowRationale] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
   const [editedReplyContent, setEditedReplyContent] = useState(
     post.replyContent
@@ -61,6 +75,35 @@ export function AdCard({
   const [editedVideoPrompt, setEditedVideoPrompt] = useState(
     post.videoPrompt || post.mediaPrompt
   );
+  const [editedScheduledTime, setEditedScheduledTime] = useState(
+    post.scheduledTime
+  );
+  const [timeError, setTimeError] = useState("");
+
+  // Convert ISO string to datetime-local format
+  const toDatetimeLocal = (isoString: string) => {
+    const date = new Date(isoString);
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
+  // Convert datetime-local to ISO string
+  const toISOString = (datetimeLocal: string) => {
+    return new Date(datetimeLocal).toISOString();
+  };
+
+  // Validate that the time is in the future
+  const validateTime = (datetimeLocal: string): boolean => {
+    const selectedTime = new Date(datetimeLocal);
+    const now = new Date();
+    if (selectedTime <= now) {
+      setTimeError("Scheduled time must be in the future");
+      return false;
+    }
+    setTimeError("");
+    return true;
+  };
 
   const handleGenerateMedia = async (
     mediaType: "image" | "video",
@@ -139,13 +182,76 @@ export function AdCard({
   };
 
   const handleSaveEdit = () => {
-    onPostEdited(post.id, editedContent, editedReplyContent);
+    // Validate time if it was changed
+    if (editedScheduledTime !== post.scheduledTime) {
+      const datetimeLocal = toDatetimeLocal(editedScheduledTime);
+      if (!validateTime(datetimeLocal)) {
+        return; // Don't save if time is invalid
+      }
+    }
+    onPostEdited(
+      post.id,
+      editedContent,
+      editedReplyContent,
+      editedScheduledTime
+    );
     setIsEditing(false);
+    setTimeError("");
   };
 
   const handleCancelEdit = () => {
     setEditedContent(post.content);
     setEditedReplyContent(post.replyContent);
+    setEditedScheduledTime(post.scheduledTime);
+    setTimeError("");
+    setIsEditing(false);
+  };
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const datetimeLocal = e.target.value;
+    if (datetimeLocal) {
+      validateTime(datetimeLocal);
+      setEditedScheduledTime(toISOString(datetimeLocal));
+    }
+  };
+
+  const handlePostToX = async () => {
+    setIsPosting(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/post-to-x", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: post.content,
+          replyContent: post.replyContent,
+          imageUrl: post.imageUrl,
+          videoUrl: post.videoUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to post to X");
+      }
+
+      const data = await response.json();
+
+      // Update post status
+      if (onPostStatusChanged) {
+        onPostStatusChanged(post.id, "posted");
+      }
+
+      // Show success message
+      console.log("Posted successfully:", data);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsPosting(false);
+    }
     setIsEditing(false);
   };
 
@@ -159,12 +265,31 @@ export function AdCard({
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <CardDescription>
-                {formatDate(post.scheduledTime)}
-              </CardDescription>
-            </div>
+            {isEditing ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Scheduled Time</span>
+                </div>
+                <Input
+                  type="datetime-local"
+                  value={toDatetimeLocal(editedScheduledTime)}
+                  onChange={handleTimeChange}
+                  className="w-auto text-sm"
+                  min={toDatetimeLocal(new Date().toISOString())}
+                />
+                {timeError && (
+                  <p className="text-xs text-destructive">{timeError}</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <CardDescription>
+                  {formatDate(post.scheduledTime)}
+                </CardDescription>
+              </div>
+            )}
             <div className="flex items-center gap-2 mt-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               <span className="text-sm font-semibold text-green-600">
@@ -233,13 +358,26 @@ export function AdCard({
           )}
         </div>
 
-        {/* Rationale */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium">Strategy Rationale</h4>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {post.rationale}
-          </p>
-        </div>
+        {/* Rationale - Collapsible */}
+        <details className="space-y-2" open={showRationale}>
+          <summary
+            className="cursor-pointer text-sm font-medium flex items-center gap-2 hover:text-primary"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowRationale(!showRationale);
+            }}
+          >
+            <TrendingUp className="h-4 w-4" />
+            Strategy Rationale
+          </summary>
+          {showRationale && (
+            <div className="pl-6">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {post.rationale}
+              </p>
+            </div>
+          )}
+        </details>
 
         {/* Media Section */}
         <div className="space-y-2">
@@ -259,9 +397,17 @@ export function AdCard({
               )}
               {post.videoUrl && (
                 <div className="rounded-md overflow-hidden border">
-                  <div className="w-full h-48 bg-muted flex items-center justify-center">
-                    <Video className="h-12 w-12 text-muted-foreground" />
-                  </div>
+                  <video
+                    src={post.videoUrl}
+                    controls
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-48 object-cover"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
                 </div>
               )}
             </div>
@@ -422,6 +568,40 @@ export function AdCard({
             </div>
           )}
         </details>
+
+        {/* Post to X Button - Bottom */}
+        {!isEditing && (
+          <div className="flex justify-center pt-4 border-t">
+            {post.status !== "posted" ? (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handlePostToX}
+                disabled={isPosting || !post.content}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isPosting ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    Posting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-3 w-3 mr-1" />
+                    Post to X
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-700 border-green-300"
+              >
+                ✓ Posted
+              </Badge>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
