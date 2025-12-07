@@ -132,9 +132,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="mb-1 text-sm text-muted-foreground">
-              Total Campaigns
-            </p>
+            <p className="mb-1 text-sm text-muted-foreground">Total Posts</p>
             <p className="text-2xl font-semibold text-foreground">
               {stats.total}
             </p>

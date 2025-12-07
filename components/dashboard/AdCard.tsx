@@ -361,7 +361,7 @@ export function AdCard({
               placeholder="Main post content..."
             />
           ) : (
-            <p className="text-sm leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
+            <p className="text-sm leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
               {post.content}
             </p>
           )}
@@ -378,7 +378,7 @@ export function AdCard({
               placeholder="Reply post with CTA and link..."
             />
           ) : (
-            <p className="text-xs leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
+            <p className="text-xs leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
               {post.replyContent}
             </p>
           )}
