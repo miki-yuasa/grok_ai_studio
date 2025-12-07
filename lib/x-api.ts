@@ -156,21 +156,18 @@ function extractKeywordsFromUrl(url: string): string | null {
 }
 
 /**
- * Fetch trending topics from X using the Trends API
- * Requires elevated API access
+ * Fetch trending topics from X using the Trends API v2
+ * Works with any approved developer account (Free, Basic, Pro, Enterprise)
  */
 export async function getTrendingTopics(limit: number = 10): Promise<string[]> {
   try {
-    // Use X API v1.1 trends endpoint with elevated access
-    // WOEID 1 = Worldwide trends
-    const response = await fetch(
-      `https://api.twitter.com/1.1/trends/place.json?id=1`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.X_API_BEARER_TOKEN}`,
-        },
-      }
-    );
+    // Use X API v2 trends endpoint
+    // WOEID 23424977 = United States trends
+    const response = await fetch(`https://api.x.com/2/trends/by/woeid/23424977`, {
+      headers: {
+        Authorization: `Bearer ${process.env.X_API_BEARER_TOKEN}`,
+      },
+    });
 
     if (!response.ok) {
       console.error(
@@ -183,14 +180,14 @@ export async function getTrendingTopics(limit: number = 10): Promise<string[]> {
 
     const data = await response.json();
 
-    // Extract trend names
-    if (!data[0]?.trends) {
+    // Extract trend names from v2 response format
+    if (!data.data || !Array.isArray(data.data)) {
       return [];
     }
 
-    const trends = data[0].trends
+    const trends = data.data
       .slice(0, limit)
-      .map((trend: any) => trend.name)
+      .map((trend: any) => trend.trend_name)
       .filter((name: string) => name && name.trim().length > 0);
 
     return trends;
