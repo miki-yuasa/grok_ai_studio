@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build the user prompt
-    const userPrompt = `Generate a comprehensive viral marketing strategy for X (Twitter) with the following parameters:
+    const userPrompt = `Generate a comprehensive viral marketing strategy for X  with the following parameters:
 
 Product/Company URL: ${productUrl}
 Campaign Budget: $${budget.toLocaleString()} USD

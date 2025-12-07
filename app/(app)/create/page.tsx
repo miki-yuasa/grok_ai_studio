@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 export default function CreatePage() {
   const [strategy, setStrategy] = useState<AdStrategy | null>(null);
   const [isClearing, setIsClearing] = useState(false);
-  const [clearMessage, setClearMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [clearMessage, setClearMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // Load cached strategy on mount
   useEffect(() => {
@@ -213,7 +216,11 @@ export default function CreatePage() {
   };
 
   const handleClearAllPosts = async () => {
-    if (!confirm("Are you sure you want to delete all posts? This cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete all posts? This cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -231,13 +238,22 @@ export default function CreatePage() {
         // Clear the strategy from state and localStorage
         setStrategy(null);
         localStorage.removeItem("cachedStrategy");
-        setClearMessage({ type: "success", text: "All posts cleared successfully!" });
+        setClearMessage({
+          type: "success",
+          text: "All posts cleared successfully!",
+        });
       } else {
-        setClearMessage({ type: "error", text: data.error || "Failed to clear posts" });
+        setClearMessage({
+          type: "error",
+          text: data.error || "Failed to clear posts",
+        });
       }
     } catch (error) {
       console.error("Failed to clear all posts:", error);
-      setClearMessage({ type: "error", text: "Failed to clear posts. Please try again." });
+      setClearMessage({
+        type: "error",
+        text: "Failed to clear posts. Please try again.",
+      });
     } finally {
       setIsClearing(false);
       // Clear message after 5 seconds
@@ -254,7 +270,9 @@ export default function CreatePage() {
             <div className="p-2 bg-primary rounded-lg">
               <Sparkles className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-medium text-foreground">Create Campaign</h1>
+            <h1 className="text-2xl font-medium text-foreground">
+              Create Campaign
+            </h1>
           </div>
           {strategy && strategy.posts.length > 0 && (
             <Button
@@ -278,7 +296,7 @@ export default function CreatePage() {
           )}
         </div>
         <p className="text-muted-foreground">
-          Generate viral ad campaigns for X (Twitter) with AI
+          Generate viral ad campaigns for X with AI
         </p>
         {clearMessage && (
           <div

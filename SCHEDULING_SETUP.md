@@ -79,7 +79,7 @@ Or create a simple script to run it periodically.
 
 3. **Scheduled Posting**: Every minute, the cron job:
    - Checks for posts where `scheduledTime <= now()` and `status !== "posted"`
-   - Posts each one to X (Twitter)
+   - Posts each one to X 
    - Updates status to "posted"
 
 4. **Manual Posting**: You can still manually post using the "Post to X" button, which also updates the database

@@ -1,5 +1,5 @@
 /**
- * X (Twitter) API utilities for competitor discovery, trend analysis, and posting
+ * X  API utilities for competitor discovery, trend analysis, and posting
  */
 
 import OAuth from "oauth-1.0a";
@@ -232,7 +232,7 @@ function getOAuth(): OAuth {
 }
 
 /**
- * Post a tweet to X (Twitter)
+ * Post a tweet to X
  * Requires OAuth 1.0a authentication with API keys
  */
 export async function postTweet(
@@ -317,7 +317,7 @@ export async function postTweet(
 }
 
 /**
- * Upload media to X (Twitter) and return media_id
+ * Upload media to X  and return media_id
  * Required before posting tweets with images/videos
  */
 export async function uploadMedia(
@@ -330,9 +330,7 @@ export async function uploadMedia(
   const accessTokenSecret = process.env.X_ACCESS_TOKEN_SECRET;
 
   if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
-    throw new Error(
-      "X API OAuth credentials not configured for media upload."
-    );
+    throw new Error("X API OAuth credentials not configured for media upload.");
   }
 
   try {

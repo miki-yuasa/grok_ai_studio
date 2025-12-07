@@ -58,8 +58,8 @@ export default function Landing() {
                 The future of marketing.
               </h1>
               <p className="mb-8 text-lg text-white/70 max-w-2xl mx-auto">
-                AI-powered ad campaigns for X (Twitter). Generate viral content
-                with Grok & Veo.
+                AI-powered ad campaigns for X. Generate viral content with Grok
+                & Veo.
               </p>
 
               <div className="gap-4 items-center justify-center flex flex-row">
@@ -155,9 +155,9 @@ export default function Landing() {
           <h2 className="text-3xl font-medium mb-6">About Studio</h2>
           <p className="text-lg text-muted-foreground mb-8">
             Studio is an AI-powered marketing platform that helps you create
-            viral ad campaigns for X (Twitter). Using cutting-edge AI from Grok
-            for strategy and content, plus Google Veo for video generation, you
-            can launch professional marketing campaigns in minutes.
+            viral ad campaigns for X. Using cutting-edge AI from Grok for
+            strategy and content, plus Google Veo for video generation, you can
+            launch professional marketing campaigns in minutes.
           </p>
           <Link href="/dashboard">
             <Button size="lg" className="rounded-full">

@@ -112,7 +112,7 @@ export default function DashboardPage() {
         <p className="mb-4 text-muted-foreground">
           {posts.length > 0
             ? "Manage and monitor your ad campaigns from this dashboard"
-            : "Get started by creating an AI-powered ad campaign for X (Twitter)"}
+            : "Get started by creating an AI-powered ad campaign for X"}
         </p>
         <Link href="/create">
           <button className="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
