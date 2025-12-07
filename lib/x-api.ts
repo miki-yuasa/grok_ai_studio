@@ -163,11 +163,14 @@ export async function getTrendingTopics(limit: number = 10): Promise<string[]> {
   try {
     // Use X API v2 trends endpoint
     // WOEID 23424977 = United States trends
-    const response = await fetch(`https://api.x.com/2/trends/by/woeid/23424977`, {
-      headers: {
-        Authorization: `Bearer ${process.env.X_API_BEARER_TOKEN}`,
-      },
-    });
+    const response = await fetch(
+      `https://api.x.com/2/trends/by/woeid/23424977`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.X_API_BEARER_TOKEN}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       console.error(
