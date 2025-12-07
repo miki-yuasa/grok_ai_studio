@@ -112,7 +112,8 @@ Output the strategy as valid JSON matching this exact schema:
       "content": "The main tweet text (engaging hook, no links, max 280 chars)",
       "replyContent": "The follow-up tweet containing the Call to Action and the LINK",
       "mediaType": "image" or "video",
-      "mediaPrompt": "Detailed prompt for the AI generator (photorealistic for images, motion details for videos)",
+      "imagePrompt": "Detailed prompt specifically optimized for image generation - include visual composition, lighting, style, details, photorealistic elements, 8k quality",
+      "videoPrompt": "Detailed prompt specifically optimized for video generation - include motion details, camera movements, timing, dynamic elements, atmosphere",
       "predictedCTR": "e.g. 3.1%",
       "rationale": "Detailed reasoning: 'I chose this angle because [Trend X] is peaking, and it highlights [Feature Y].'",
       "status": "draft"
