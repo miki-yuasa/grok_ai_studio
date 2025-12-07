@@ -24,6 +24,7 @@ import {
   X,
   Send,
 } from "lucide-react";
+import { formatNumber } from "@/lib/metrics";
 
 interface AdCardProps {
   post: AdPost;
@@ -32,13 +33,21 @@ interface AdCardProps {
     mediaUrl: string,
     mediaType: "image" | "video"
   ) => void;
-  onPostEdited: (postId: string, content: string, replyContent: string, scheduledTime?: string) => void;
+  onPostEdited: (
+    postId: string,
+    content: string,
+    replyContent: string,
+    scheduledTime?: string
+  ) => void;
   onMediaPromptEdited: (
     postId: string,
     imagePrompt: string,
     videoPrompt: string
   ) => void;
-  onPostStatusChanged?: (postId: string, status: "draft" | "generated" | "posted") => void;
+  onPostStatusChanged?: (
+    postId: string,
+    status: "draft" | "generated" | "posted"
+  ) => void;
 }
 
 export function AdCard({
@@ -67,7 +76,9 @@ export function AdCard({
   const [editedVideoPrompt, setEditedVideoPrompt] = useState(
     post.videoPrompt || post.mediaPrompt
   );
-  const [editedScheduledTime, setEditedScheduledTime] = useState(post.scheduledTime);
+  const [editedScheduledTime, setEditedScheduledTime] = useState(
+    post.scheduledTime
+  );
   const [timeError, setTimeError] = useState("");
 
   // Convert ISO string to datetime-local format
@@ -179,7 +190,12 @@ export function AdCard({
         return; // Don't save if time is invalid
       }
     }
-    onPostEdited(post.id, editedContent, editedReplyContent, editedScheduledTime);
+    onPostEdited(
+      post.id,
+      editedContent,
+      editedReplyContent,
+      editedScheduledTime
+    );
     setIsEditing(false);
     setTimeError("");
   };
@@ -224,7 +240,7 @@ export function AdCard({
       }
 
       const data = await response.json();
-      
+
       // Update post status
       if (onPostStatusChanged) {
         onPostStatusChanged(post.id, "posted");
@@ -269,11 +285,42 @@ export function AdCard({
                 </CardDescription>
               </div>
             )}
-            <div className="flex items-center gap-2 mt-2">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-semibold text-green-600">
-                Predicted CTR: {post.predictedCTR}
-              </span>
+            {/* Prediction Metrics */}
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-semibold text-green-600">
+                  Predicted CTR: {post.predictedCTR}
+                </span>
+              </div>
+              {post.predictedCPM && post.predictedCVR && (
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div>CPM: {post.predictedCPM}</div>
+                  <div>CVR: {post.predictedCVR}</div>
+                </div>
+              )}
+              {post.calculatedImpressions && (
+                <div className="border-t pt-2 space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Impressions:</span>
+                    <span className="font-medium">
+                      {formatNumber(post.calculatedImpressions)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Clicks:</span>
+                    <span className="font-medium">
+                      {formatNumber(post.calculatedClicks || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Conversions:</span>
+                    <span className="font-medium">
+                      {(post.calculatedConversions || 0).toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           {/* Edit/Save Controls */}
@@ -314,7 +361,7 @@ export function AdCard({
               placeholder="Main post content..."
             />
           ) : (
-            <p className="text-sm leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
+            <p className="text-sm leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
               {post.content}
             </p>
           )}
@@ -331,7 +378,7 @@ export function AdCard({
               placeholder="Reply post with CTA and link..."
             />
           ) : (
-            <p className="text-xs leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
+            <p className="text-xs leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
               {post.replyContent}
             </p>
           )}
@@ -572,7 +619,10 @@ export function AdCard({
                 )}
               </Button>
             ) : (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-700 border-green-300"
+              >
                 ✓ Posted
               </Badge>
             )}
