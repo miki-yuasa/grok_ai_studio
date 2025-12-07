@@ -228,7 +228,7 @@ export default function Landing() {
               rel="noopener noreferrer"
               className="flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Twitter / X
+              X
               <ArrowRight className="h-4 w-4 -rotate-45" />
             </a>
             <a
