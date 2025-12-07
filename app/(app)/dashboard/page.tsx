@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Sparkles, Plus } from "lucide-react";
+import { ArrowRight, Sparkles, Plus, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,6 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import Link from "next/link";
 import { formatNumber } from "@/lib/metrics";
 
@@ -100,10 +105,6 @@ export default function DashboardPage() {
 
       {/* Welcome card */}
       <div className="rounded-2xl border border-border bg-card p-6">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-          <Sparkles className="h-3 w-3" />
-          AI-Powered Marketing
-        </div>
         <h2 className="mb-2 text-xl font-medium text-foreground">
           {posts.length > 0
             ? "Your campaigns are ready"
@@ -179,22 +180,166 @@ export default function DashboardPage() {
                 <TableHead className="text-muted-foreground">Content</TableHead>
                 <TableHead className="text-muted-foreground">Media</TableHead>
                 <TableHead className="text-muted-foreground text-right">
-                  Pred. Impressions
+                  <div className="flex items-center justify-end gap-1">
+                    Pred. Impressions
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                        >
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">
+                            Predicted Impressions
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Expected number of times this ad will be shown.
+                            Calculated as: (Budget / CPM) × 1,000.
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </TableHead>
                 <TableHead className="text-muted-foreground text-right">
-                  Pred. Clicks
+                  <div className="flex items-center justify-end gap-1">
+                    Pred. Clicks
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                        >
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">
+                            Predicted Clicks
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Expected number of clicks on this post. Calculated
+                            as: Impressions × CTR.
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </TableHead>
                 <TableHead className="text-muted-foreground text-right">
-                  Pred. Conversions
+                  <div className="flex items-center justify-end gap-1">
+                    Pred. Conversions
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                        >
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">
+                            Predicted Conversions
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Expected number of conversions (purchases, sign-ups,
+                            etc.). Calculated as: Clicks × CVR.
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </TableHead>
                 <TableHead className="text-muted-foreground text-right">
-                  Pred. CTR
+                  <div className="flex items-center justify-end gap-1">
+                    Pred. CTR
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                        >
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Predicted CTR</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Predicted Click-Through Rate - the percentage of
+                            people who see the ad and click on it. Based on
+                            content type, trend relevance, and historical
+                            engagement patterns.
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </TableHead>
                 <TableHead className="text-muted-foreground text-right">
-                  Pred. CPM
+                  <div className="flex items-center justify-end gap-1">
+                    Pred. CPM
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                        >
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Predicted CPM</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Predicted Cost Per Mille (cost per 1,000
+                            impressions). Estimated based on competition level,
+                            audience specificity, media type, and target
+                            demographics.
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </TableHead>
                 <TableHead className="text-muted-foreground text-right">
-                  Pred. CVR
+                  <div className="flex items-center justify-end gap-1">
+                    Pred. CVR
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                        >
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Predicted CVR</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Predicted Conversion Rate - the percentage of clicks
+                            that result in conversions. Based on product price
+                            point, offer strength, audience intent, and industry
+                            benchmarks.
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </TableHead>
               </TableRow>
             </TableHeader>
