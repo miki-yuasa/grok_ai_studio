@@ -13,11 +13,13 @@ import { AdCard } from "./AdCard";
 interface StrategyGridProps {
   strategy: AdStrategy | null;
   onMediaGenerated: (postId: string, mediaUrl: string) => void;
+  onPostEdited: (postId: string, content: string, replyContent: string) => void;
 }
 
 export function StrategyGrid({
   strategy,
   onMediaGenerated,
+  onPostEdited,
 }: StrategyGridProps) {
   if (!strategy) {
     return (
@@ -62,6 +64,7 @@ export function StrategyGrid({
               key={post.id}
               post={post}
               onMediaGenerated={onMediaGenerated}
+              onPostEdited={onPostEdited}
             />
           ))}
         </div>

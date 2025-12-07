@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InputForm } from "@/components/dashboard/InputForm";
 import { StrategyGrid } from "@/components/dashboard/StrategyGrid";
 import { AdStrategy } from "@/lib/types";
@@ -9,7 +9,28 @@ import { Sparkles } from "lucide-react";
 export default function Home() {
   const [strategy, setStrategy] = useState<AdStrategy | null>(null);
 
+  // Load cached strategy on mount
+  useEffect(() => {
+    const cachedStrategy = localStorage.getItem("cachedStrategy");
+    if (cachedStrategy) {
+      try {
+        setStrategy(JSON.parse(cachedStrategy));
+      } catch (error) {
+        console.error("Failed to parse cached strategy:", error);
+        localStorage.removeItem("cachedStrategy");
+      }
+    }
+  }, []);
+
+  // Cache strategy whenever it changes
+  useEffect(() => {
+    if (strategy) {
+      localStorage.setItem("cachedStrategy", JSON.stringify(strategy));
+    }
+  }, [strategy]);
+
   const handleStrategyGenerated = (newStrategy: AdStrategy) => {
+    // Clear cache and set new strategy when regenerating
     setStrategy(newStrategy);
   };
 
@@ -20,6 +41,23 @@ export default function Home() {
       post.id === postId
         ? { ...post, mediaUrl, status: "generated" as const }
         : post
+    );
+
+    setStrategy({
+      ...strategy,
+      posts: updatedPosts,
+    });
+  };
+
+  const handlePostEdited = (
+    postId: string,
+    content: string,
+    replyContent: string
+  ) => {
+    if (!strategy) return;
+
+    const updatedPosts = strategy.posts.map((post) =>
+      post.id === postId ? { ...post, content, replyContent } : post
     );
 
     setStrategy({
@@ -51,6 +89,7 @@ export default function Home() {
           <StrategyGrid
             strategy={strategy}
             onMediaGenerated={handleMediaGenerated}
+            onPostEdited={handlePostEdited}
           />
         </div>
 

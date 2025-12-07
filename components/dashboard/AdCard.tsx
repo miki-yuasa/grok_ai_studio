@@ -11,16 +11,21 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Image, Video, Loader2, TrendingUp } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar, Image, Video, Loader2, TrendingUp, Edit2, Save, X } from "lucide-react";
 
 interface AdCardProps {
   post: AdPost;
   onMediaGenerated: (postId: string, mediaUrl: string) => void;
+  onPostEdited: (postId: string, content: string, replyContent: string) => void;
 }
 
-export function AdCard({ post, onMediaGenerated }: AdCardProps) {
+export function AdCard({ post, onMediaGenerated, onPostEdited }: AdCardProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(post.content);
+  const [editedReplyContent, setEditedReplyContent] = useState(post.replyContent);
 
   const handleGenerateMedia = async () => {
     setIsGenerating(true);
@@ -65,6 +70,17 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
     });
   };
 
+  const handleSaveEdit = () => {
+    onPostEdited(post.id, editedContent, editedReplyContent);
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedContent(post.content);
+    setEditedReplyContent(post.replyContent);
+    setIsEditing(false);
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -97,20 +113,70 @@ export function AdCard({ post, onMediaGenerated }: AdCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Edit/Save Controls */}
+        <div className="flex justify-end gap-2">
+          {isEditing ? (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCancelEdit}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveEdit}
+              >
+                <Save className="h-3 w-3 mr-1" />
+                Save
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit2 className="h-3 w-3 mr-1" />
+              Edit Posts
+            </Button>
+          )}
+        </div>
+
         {/* Main Tweet */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium">Main Tweet</h4>
-          <p className="text-sm leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
-            {post.content}
-          </p>
+          <h4 className="text-sm font-medium">Main Post</h4>
+          {isEditing ? (
+            <Textarea
+              value={editedContent}
+              onChange={(e) => setEditedContent(e.target.value)}
+              className="text-sm leading-relaxed min-h-[100px]"
+              placeholder="Main post content..."
+            />
+          ) : (
+            <p className="text-sm leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
+              {post.content}
+            </p>
+          )}
         </div>
 
         {/* Reply Tweet with CTA */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium">Reply Tweet (CTA + Link)</h4>
-          <p className="text-xs leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
-            {post.replyContent}
-          </p>
+          <h4 className="text-sm font-medium">Reply Post (CTA + Link)</h4>
+          {isEditing ? (
+            <Textarea
+              value={editedReplyContent}
+              onChange={(e) => setEditedReplyContent(e.target.value)}
+              className="text-xs leading-relaxed min-h-[80px]"
+              placeholder="Reply post with CTA and link..."
+            />
+          ) : (
+            <p className="text-xs leading-relaxed bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
+              {post.replyContent}
+            </p>
+          )}
         </div>
 
         {/* Rationale */}
