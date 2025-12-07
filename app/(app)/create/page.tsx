@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { InputForm } from "@/components/dashboard/InputForm";
 import { StrategyGrid } from "@/components/dashboard/StrategyGrid";
+import { GenerationProgress } from "@/components/dashboard/GenerationProgress";
 import { AdStrategy } from "@/lib/types";
 import { Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,9 @@ export default function CreatePage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [generationSteps, setGenerationSteps] = useState<
+    Array<{ id: string; label: string; status: "pending" | "active" | "complete" }>
+  >([]);
 
   // Load cached strategy on mount
   useEffect(() => {
@@ -59,6 +63,46 @@ export default function CreatePage() {
       localStorage.setItem("cachedStrategy", JSON.stringify(strategy));
     }
   }, [strategy]);
+
+  const handleProgressUpdate = (step: string) => {
+    const stepConfig = [
+      { id: "analyzing", label: "Analyzing Product" },
+      { id: "searching", label: "Searching Trends" },
+      { id: "predicting", label: "Predicting Traffic" },
+      { id: "synthesizing", label: "Synthesizing Strategy" },
+    ];
+
+    if (step === "analyzing") {
+      // Initialize all steps
+      setGenerationSteps(
+        stepConfig.map((s, idx) => ({
+          ...s,
+          status: idx === 0 ? "active" : "pending",
+        }))
+      );
+    } else if (step === "complete") {
+      // Mark all steps as complete
+      setGenerationSteps((prev) =>
+        prev.map((s) => ({ ...s, status: "complete" as const }))
+      );
+      // Clear after a short delay
+      setTimeout(() => setGenerationSteps([]), 2000);
+    } else {
+      // Update progress
+      setGenerationSteps((prev) =>
+        prev.map((s) => ({
+          ...s,
+          status:
+            s.id === step
+              ? "active"
+              : stepConfig.findIndex((c) => c.id === s.id) <
+                stepConfig.findIndex((c) => c.id === step)
+              ? "complete"
+              : "pending",
+        }))
+      );
+    }
+  };
 
   const handleStrategyGenerated = async (newStrategy: AdStrategy) => {
     // Clear cache and set new strategy when regenerating
@@ -313,7 +357,16 @@ export default function CreatePage() {
 
       {/* Main Content */}
       <div className="space-y-8">
-        <InputForm onStrategyGenerated={handleStrategyGenerated} />
+        <InputForm 
+          onStrategyGenerated={handleStrategyGenerated}
+          onProgressUpdate={handleProgressUpdate}
+        />
+        
+        {/* Generation Progress */}
+        {generationSteps.length > 0 && (
+          <GenerationProgress steps={generationSteps} />
+        )}
+        
         <StrategyGrid
           strategy={strategy}
           onMediaGenerated={handleMediaGenerated}

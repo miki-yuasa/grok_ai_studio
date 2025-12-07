@@ -16,9 +16,13 @@ import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 interface InputFormProps {
   onStrategyGenerated: (strategy: any) => void;
+  onProgressUpdate?: (step: string) => void;
 }
 
-export function InputForm({ onStrategyGenerated }: InputFormProps) {
+export function InputForm({
+  onStrategyGenerated,
+  onProgressUpdate,
+}: InputFormProps) {
   const [productUrl, setProductUrl] = useState("");
   const [budget, setBudget] = useState("");
   const [competitorHandles, setCompetitorHandles] = useState("");
@@ -65,6 +69,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
     setError("");
 
     try {
+      onProgressUpdate?.("analyzing");
+
       // Convert images to base64 for sending
       const imageData: string[] = [];
       for (const file of supplementaryImages) {
@@ -80,6 +86,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
           console.error("Failed to read image:", file.name, err);
         }
       }
+
+      onProgressUpdate?.("searching");
 
       const response = await fetch("/api/generate-strategy", {
         method: "POST",
@@ -102,7 +110,17 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
         throw new Error(errorData.error || "Failed to generate strategy");
       }
 
+      onProgressUpdate?.("predicting");
+
+      // Simulate a small delay for the predicting step to be visible
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      onProgressUpdate?.("synthesizing");
+
       const strategy = await response.json();
+
+      onProgressUpdate?.("complete");
+
       onStrategyGenerated(strategy);
     } catch (err) {
       setError((err as Error).message);
