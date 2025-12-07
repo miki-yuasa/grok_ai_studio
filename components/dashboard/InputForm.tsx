@@ -119,81 +119,31 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
             />
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-center gap-2"
-          >
-            {showAdvanced ? (
-              <>
-                <ChevronUp className="h-4 w-4" />
-                Hide Advanced Options
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4" />
-                Show Advanced Options
-              </>
-            )}
-          </Button>
+          <div className="flex justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex items-center justify-center gap-2 px-6"
+            >
+              {showAdvanced ? (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  Hide Advanced Options
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  Show Advanced Options
+                </>
+              )}
+            </Button>
+          </div>
 
           {showAdvanced && (
             <div className="space-y-4 pt-2 border-t">
               <div className="space-y-2">
-                <Label htmlFor="competitorHandles">
-                  Competitor Handles
-                </Label>
-                <Input
-                  id="competitorHandles"
-                  type="text"
-                  placeholder="@competitor1, @competitor2"
-                  value={competitorHandles}
-                  onChange={(e) => setCompetitorHandles(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Comma-separated X handles to analyze
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="trendContext">
-                  Current Trend Context
-                </Label>
-                <Textarea
-                  id="trendContext"
-                  placeholder="Describe current trending topics, viral content patterns, or market dynamics..."
-                  value={trendContext}
-                  onChange={(e) => setTrendContext(e.target.value)}
-                  rows={4}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Add context about trending topics to help generate more
-                  relevant campaigns
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="targetMarket">
-                  Target Market/Audience
-                </Label>
-                <Textarea
-                  id="targetMarket"
-                  placeholder="e.g., Tech-savvy millennials, B2B enterprise decision makers, Gen Z gamers..."
-                  value={targetMarket}
-                  onChange={(e) => setTargetMarket(e.target.value)}
-                  rows={3}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Describe your target audience demographics, interests, and
-                  behaviors
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="campaignDetails">
-                  Campaign Details
-                </Label>
+                <Label htmlFor="campaignDetails">Campaign Details</Label>
                 <Textarea
                   id="campaignDetails"
                   placeholder="e.g., Product launch, seasonal promotion, brand awareness campaign..."
@@ -273,6 +223,48 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
                   </div>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetMarket">Target Market/Audience</Label>
+                <Textarea
+                  id="targetMarket"
+                  placeholder="e.g., Tech-savvy millennials, B2B enterprise decision makers, Gen Z gamers..."
+                  value={targetMarket}
+                  onChange={(e) => setTargetMarket(e.target.value)}
+                  rows={3}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Describe your target audience demographics, interests, and
+                  behaviors
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="competitorHandles">Competitor Handles</Label>
+                <Input
+                  id="competitorHandles"
+                  type="text"
+                  placeholder="@competitor1, @competitor2"
+                  value={competitorHandles}
+                  onChange={(e) => setCompetitorHandles(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Comma-separated X handles to analyze
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="trendContext">Current Trend Context</Label>
+                <Textarea
+                  id="trendContext"
+                  placeholder="Describe current trending topics, viral content patterns, or market dynamics..."
+                  value={trendContext}
+                  onChange={(e) => setTrendContext(e.target.value)}
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add context about trending topics to help generate more
+                  relevant campaigns
+                </p>
+              </div>
             </div>
           )}
 
@@ -282,16 +274,18 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Strategy...
-              </>
-            ) : (
-              "Generate Strategy"
-            )}
-          </Button>
+          <div className="flex justify-center">
+            <Button type="submit" className="px-8" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Strategy...
+                </>
+              ) : (
+                "Generate Strategy"
+              )}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
