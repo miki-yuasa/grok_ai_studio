@@ -19,7 +19,7 @@ export async function generateWithGrok(
   temperature: number = 0.7
 ): Promise<string> {
   const completion = await grokClient.chat.completions.create({
-    model: "grok-beta",
+    model: "grok-4-1-fast-reasoning",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
@@ -74,8 +74,8 @@ Your goal is to take a product and a set of market conditions and generate a hig
 
 ### YOUR INPUTS:
 1. **Product/Company:** URL or description of what is being advertised.
-2. **Competitor/Context:** Handles or recent activity of competitors (if provided).
-3. **Trend Data:** A summary of what is currently viral or trending on X/TikTok.
+2. **Competitor/Context:** Handles or recent activity of competitors (may be auto-discovered from X API).
+3. **Trend Data:** A summary of what is currently viral or trending on X/TikTok (may include real-time trending topics).
 
 ### YOUR TASKS:
 1. **Analyze:** Synthesize the product's value prop with the provided trend data.

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithGrok, STRATEGY_SYSTEM_PROMPT } from "@/lib/grok";
 import { AdStrategy, StrategyRequest } from "@/lib/types";
+import { discoverCompetitors, getTrendingTopics } from "@/lib/x-api";
 
 export async function POST(request: NextRequest) {
   try {
     const body: StrategyRequest = await request.json();
-    const { productUrl, competitorHandles, trendContext } = body;
+    let { productUrl, competitorHandles, trendContext } = body;
 
     if (!productUrl) {
       return NextResponse.json(
@@ -14,14 +15,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Auto-discover competitors if not provided
+    if (!competitorHandles && process.env.X_API_BEARER_TOKEN) {
+      console.log('Auto-discovering competitors...');
+      const discoveredCompetitors = await discoverCompetitors(productUrl, 5);
+      if (discoveredCompetitors.length > 0) {
+        competitorHandles = discoveredCompetitors.join(', ');
+        console.log('Discovered competitors:', competitorHandles);
+      }
+    }
+
+    // Enhance trend context with real trending topics if not provided
+    if (!trendContext && process.env.X_API_BEARER_TOKEN) {
+      console.log('Fetching trending topics...');
+      const trends = await getTrendingTopics(10);
+      if (trends.length > 0) {
+        trendContext = `Current trending topics: ${trends.join(', ')}`;
+        console.log('Added trending context:', trendContext);
+      }
+    }
+
     // Build the user prompt
     const userPrompt = `Generate a comprehensive viral marketing strategy for X (Twitter) with the following parameters:
 
 Product/Company URL: ${productUrl}
 ${
   competitorHandles
-    ? `Competitor Handles: ${competitorHandles}`
-    : "Competitor Handles: Not provided"
+    ? `Competitor Handles (${competitorHandles.split(',').length > 3 ? 'Auto-discovered' : 'User-provided'}): ${competitorHandles}`
+    : "Competitor Handles: Not provided - using general market analysis"
 }
 ${
   trendContext
