@@ -20,7 +20,7 @@ export default function Home() {
         if (parsed.posts) {
           parsed.posts = parsed.posts.map((post: any) => {
             const migrated = { ...post };
-            
+
             // Migrate mediaUrl
             if (post.mediaUrl && !post.imageUrl && !post.videoUrl) {
               if (post.mediaType === "image") {
@@ -29,13 +29,13 @@ export default function Home() {
                 migrated.videoUrl = post.mediaUrl;
               }
             }
-            
+
             // Migrate mediaPrompt to both image and video prompts if not already set
             if (post.mediaPrompt && !post.imagePrompt && !post.videoPrompt) {
               migrated.imagePrompt = post.mediaPrompt;
               migrated.videoPrompt = post.mediaPrompt;
             }
-            
+
             return migrated;
           });
         }
@@ -101,7 +101,11 @@ export default function Home() {
     });
   };
 
-  const handleMediaPromptEdited = (postId: string, imagePrompt: string, videoPrompt: string) => {
+  const handleMediaPromptEdited = (
+    postId: string,
+    imagePrompt: string,
+    videoPrompt: string
+  ) => {
     if (!strategy) return;
 
     const updatedPosts = strategy.posts.map((post) =>
