@@ -126,6 +126,8 @@ export default function Home() {
     postId: string,
     content: string,
     replyContent: string,
+    mediaUrl: string,
+    mediaType: "image" | "video",
     scheduledTime?: string
   ) => {
     if (!strategy) return;
@@ -137,6 +139,10 @@ export default function Home() {
             content,
             replyContent,
             ...(scheduledTime && { scheduledTime }),
+            ...(mediaType === "image"
+              ? { imageUrl: mediaUrl }
+              : { videoUrl: mediaUrl }),
+            status: "generated" as const,
           }
         : post
     );
@@ -243,6 +249,40 @@ export default function Home() {
       // Clear message after 5 seconds
       setTimeout(() => setClearMessage(null), 5000);
     }
+  };
+
+  const handlePostEdited = (
+    postId: string,
+    content: string,
+    replyContent: string
+  ) => {
+    if (!strategy) return;
+
+    const updatedPosts = strategy.posts.map((post) =>
+      post.id === postId ? { ...post, content, replyContent } : post
+    );
+
+    setStrategy({
+      ...strategy,
+      posts: updatedPosts,
+    });
+  };
+
+  const handleMediaPromptEdited = (
+    postId: string,
+    imagePrompt: string,
+    videoPrompt: string
+  ) => {
+    if (!strategy) return;
+
+    const updatedPosts = strategy.posts.map((post) =>
+      post.id === postId ? { ...post, imagePrompt, videoPrompt } : post
+    );
+
+    setStrategy({
+      ...strategy,
+      posts: updatedPosts,
+    });
   };
 
   return (
