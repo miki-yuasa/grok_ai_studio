@@ -10,6 +10,9 @@ import {
   TrendingUp,
   Info,
   BarChart3,
+  Sparkles,
+  Clock,
+  Award,
 } from "lucide-react";
 
 interface BudgetPredictionsData {
@@ -21,6 +24,13 @@ interface BudgetPredictionsData {
   avgCTR: number;
   avgCVR: number;
   costPerConversion: number;
+  // Campaign Performance Predictions
+  estimatedReach?: number;
+  engagementRate?: number;
+  projectedROI?: number;
+  breakEvenConversions?: number;
+  optimalPostingTimes?: string[];
+  performanceScore?: number;
 }
 
 interface PostPrediction {
@@ -33,7 +43,9 @@ interface PostPrediction {
 }
 
 export default function BudgetPredictions() {
-  const [predictions, setPredictions] = useState<BudgetPredictionsData | null>(null);
+  const [predictions, setPredictions] = useState<BudgetPredictionsData | null>(
+    null
+  );
   const [posts, setPosts] = useState<PostPrediction[]>([]);
   const [budget, setBudget] = useState<number>(0);
 
@@ -101,32 +113,99 @@ export default function BudgetPredictions() {
     });
 
     const postCount = posts.length;
+    const avgCTR = (totalCTR / postCount) * 100;
+    const avgCVR = (totalCVR / postCount) * 100;
+    const costPerConversion =
+      totalConversions > 0 ? budget / totalConversions : 0;
+
+    // Campaign Performance Predictions
+    const estimatedReach = Math.round(totalImpressions * 0.85); // Assuming 85% unique reach
+    const engagementRate = avgCTR + avgCVR * 0.1; // Combined engagement metric
+
+    // Assuming average conversion value of $50 for ROI calculation
+    const avgConversionValue = 50;
+    const revenue = totalConversions * avgConversionValue;
+    const projectedROI = budget > 0 ? ((revenue - budget) / budget) * 100 : 0;
+
+    // Break-even calculation
+    const breakEvenConversions = Math.ceil(budget / avgConversionValue);
+
+    // Performance score (0-100) based on industry benchmarks
+    let performanceScore = 0;
+    if (avgCTR >= 2) performanceScore += 25; // Good CTR
+    else if (avgCTR >= 1.5) performanceScore += 15;
+    else if (avgCTR >= 1) performanceScore += 10;
+
+    if (avgCVR >= 2) performanceScore += 25; // Good CVR
+    else if (avgCVR >= 1) performanceScore += 15;
+    else if (avgCVR >= 0.5) performanceScore += 10;
+
+    const avgCPM = totalCPM / postCount;
+    if (avgCPM <= 6) performanceScore += 25; // Good CPM
+    else if (avgCPM <= 8) performanceScore += 15;
+    else if (avgCPM <= 10) performanceScore += 10;
+
+    if (costPerConversion <= 30) performanceScore += 25; // Good CPA
+    else if (costPerConversion <= 50) performanceScore += 15;
+    else if (costPerConversion <= 75) performanceScore += 10;
+
     return {
       totalBudget: budget,
       totalPredictedImpressions: Math.round(totalImpressions),
       totalPredictedClicks: Math.round(totalClicks),
       totalPredictedConversions: Math.round(totalConversions * 10) / 10,
-      avgCPM: Math.round((totalCPM / postCount) * 100) / 100,
-      avgCTR: Math.round(((totalCTR / postCount) * 100) * 100) / 100,
-      avgCVR: Math.round(((totalCVR / postCount) * 100) * 100) / 100,
-      costPerConversion:
-        totalConversions > 0
-          ? Math.round((budget / totalConversions) * 100) / 100
-          : 0,
+      avgCPM: Math.round(avgCPM * 100) / 100,
+      avgCTR: Math.round(avgCTR * 100) / 100,
+      avgCVR: Math.round(avgCVR * 100) / 100,
+      costPerConversion: Math.round(costPerConversion * 100) / 100,
+      estimatedReach,
+      engagementRate: Math.round(engagementRate * 100) / 100,
+      projectedROI: Math.round(projectedROI * 10) / 10,
+      breakEvenConversions,
+      performanceScore: Math.round(performanceScore),
     };
   };
 
   const displayPredictions = predictions || calculatePredictions();
 
+  const getPerformanceLevel = (score: number) => {
+    if (score >= 80)
+      return {
+        label: "Excellent",
+        color: "text-emerald-600",
+        bg: "bg-emerald-50 border-emerald-200",
+      };
+    if (score >= 60)
+      return {
+        label: "Good",
+        color: "text-blue-600",
+        bg: "bg-blue-50 border-blue-200",
+      };
+    if (score >= 40)
+      return {
+        label: "Average",
+        color: "text-amber-600",
+        bg: "bg-amber-50 border-amber-200",
+      };
+    return {
+      label: "Needs Improvement",
+      color: "text-red-600",
+      bg: "bg-red-50 border-red-200",
+    };
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-medium text-foreground">
-          Budget & Conversion Predictions
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-medium text-foreground">
+            Campaign Performance Predictions
+          </h2>
+          <Sparkles className="h-5 w-5 text-primary" />
+        </div>
         <p className="text-sm text-muted-foreground">
-          AI-estimated campaign performance based on your strategy
+          AI-powered analytics and performance forecasts for your campaign
         </p>
       </div>
 
@@ -191,7 +270,9 @@ export default function BudgetPredictions() {
             </h3>
             <div className="grid gap-6 md:grid-cols-3">
               <div>
-                <p className="text-sm text-muted-foreground">Cost per Click (CPC)</p>
+                <p className="text-sm text-muted-foreground">
+                  Cost per Click (CPC)
+                </p>
                 <p className="text-xl font-semibold text-foreground">
                   {displayPredictions.totalPredictedClicks > 0
                     ? formatCurrency(
@@ -212,13 +293,193 @@ export default function BudgetPredictions() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Cost per 1K Impressions</p>
+                <p className="text-sm text-muted-foreground">
+                  Cost per 1K Impressions
+                </p>
                 <p className="text-xl font-semibold text-foreground">
                   {formatCurrency(displayPredictions.avgCPM)}
                 </p>
               </div>
             </div>
           </div>
+
+          {/* Campaign Performance Predictions */}
+          {displayPredictions.performanceScore !== undefined && (
+            <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 to-primary/10 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-medium text-foreground">
+                  Campaign Performance Prediction
+                </h3>
+              </div>
+
+              {/* Performance Score */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">
+                    Overall Performance Score
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={
+                      getPerformanceLevel(displayPredictions.performanceScore)
+                        .bg
+                    }
+                  >
+                    <span
+                      className={
+                        getPerformanceLevel(displayPredictions.performanceScore)
+                          .color
+                      }
+                    >
+                      {
+                        getPerformanceLevel(displayPredictions.performanceScore)
+                          .label
+                      }
+                    </span>
+                  </Badge>
+                </div>
+                <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="absolute h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-500"
+                    style={{ width: `${displayPredictions.performanceScore}%` }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-xs text-muted-foreground">0</span>
+                  <span className="text-xs font-semibold text-foreground">
+                    {displayPredictions.performanceScore}/100
+                  </span>
+                </div>
+              </div>
+
+              {/* Key Metrics Grid */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {displayPredictions.estimatedReach && (
+                  <div className="bg-background/50 backdrop-blur rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Eye className="h-4 w-4" />
+                      <span className="text-xs">Estimated Reach</span>
+                    </div>
+                    <p className="text-xl font-semibold text-foreground">
+                      {formatNumber(displayPredictions.estimatedReach)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ~85% unique viewers
+                    </p>
+                  </div>
+                )}
+
+                {displayPredictions.engagementRate !== undefined && (
+                  <div className="bg-background/50 backdrop-blur rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-xs">Engagement Rate</span>
+                    </div>
+                    <p className="text-xl font-semibold text-blue-600">
+                      {displayPredictions.engagementRate.toFixed(2)}%
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Combined metric
+                    </p>
+                  </div>
+                )}
+
+                {displayPredictions.projectedROI !== undefined && (
+                  <div className="bg-background/50 backdrop-blur rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Award className="h-4 w-4" />
+                      <span className="text-xs">Projected ROI</span>
+                    </div>
+                    <p
+                      className={`text-xl font-semibold ${
+                        displayPredictions.projectedROI > 0
+                          ? "text-emerald-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {displayPredictions.projectedROI > 0 ? "+" : ""}
+                      {displayPredictions.projectedROI.toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Based on $50 avg value
+                    </p>
+                  </div>
+                )}
+
+                {displayPredictions.breakEvenConversions && (
+                  <div className="bg-background/50 backdrop-blur rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Target className="h-4 w-4" />
+                      <span className="text-xs">Break-Even Point</span>
+                    </div>
+                    <p className="text-xl font-semibold text-foreground">
+                      {displayPredictions.breakEvenConversions}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      conversions needed
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Performance Insights */}
+              <div className="mt-6 p-4 bg-background/50 backdrop-blur rounded-lg">
+                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  Performance Insights
+                </h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  {displayPredictions.avgCTR >= 2 && (
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-600">✓</span>
+                      <span>Excellent CTR - Your ads are highly engaging</span>
+                    </li>
+                  )}
+                  {displayPredictions.avgCVR >= 2 && (
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-600">✓</span>
+                      <span>
+                        Strong conversion rate - Effective call-to-actions
+                      </span>
+                    </li>
+                  )}
+                  {displayPredictions.avgCPM <= 6 && (
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-600">✓</span>
+                      <span>Competitive CPM - Cost-efficient impressions</span>
+                    </li>
+                  )}
+                  {displayPredictions.costPerConversion <= 30 && (
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-600">✓</span>
+                      <span>
+                        Low acquisition cost - Excellent value per conversion
+                      </span>
+                    </li>
+                  )}
+                  {displayPredictions.projectedROI &&
+                    displayPredictions.projectedROI > 100 && (
+                      <li className="flex items-start gap-2">
+                        <span className="text-emerald-600">✓</span>
+                        <span>
+                          High ROI potential - Campaign likely to be profitable
+                        </span>
+                      </li>
+                    )}
+                  {displayPredictions.performanceScore < 40 && (
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-600">!</span>
+                      <span>
+                        Consider optimizing budget allocation or targeting to
+                        improve results
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          )}
 
           {/* Formulas Explanation */}
           <div className="rounded-xl border border-border bg-muted/30 p-6">
@@ -233,25 +494,19 @@ export default function BudgetPredictions() {
                 <p className="font-mono text-xs text-muted-foreground mb-1">
                   Impressions
                 </p>
-                <p className="text-foreground">
-                  (Budget ÷ CPM) × 1,000
-                </p>
+                <p className="text-foreground">(Budget ÷ CPM) × 1,000</p>
               </div>
               <div>
                 <p className="font-mono text-xs text-muted-foreground mb-1">
                   Clicks
                 </p>
-                <p className="text-foreground">
-                  Impressions × CTR
-                </p>
+                <p className="text-foreground">Impressions × CTR</p>
               </div>
               <div>
                 <p className="font-mono text-xs text-muted-foreground mb-1">
                   Conversions
                 </p>
-                <p className="text-foreground">
-                  Clicks × CVR
-                </p>
+                <p className="text-foreground">Clicks × CVR</p>
               </div>
             </div>
           </div>
@@ -273,7 +528,8 @@ export default function BudgetPredictions() {
                   const ctrStr = post.predictedCTR || "2%";
                   const ctr = parseFloat(ctrStr.replace("%", ""));
                   const cvr = post.estimatedCVR || 2;
-                  const budgetPerPost = displayPredictions.totalBudget / posts.length;
+                  const budgetPerPost =
+                    displayPredictions.totalBudget / posts.length;
                   const impressions = (budgetPerPost / cpm) * 1000;
                   const clicks = impressions * (ctr / 100);
                   const conversions = clicks * (cvr / 100);
@@ -303,23 +559,39 @@ export default function BudgetPredictions() {
                         </div>
                         <div className="flex items-center gap-1">
                           <span className="text-muted-foreground">CTR:</span>
-                          <span className="font-medium text-blue-600">{ctr}%</span>
+                          <span className="font-medium text-blue-600">
+                            {ctr}%
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <span className="text-muted-foreground">CVR:</span>
-                          <span className="font-medium text-emerald-600">{cvr}%</span>
+                          <span className="font-medium text-emerald-600">
+                            {cvr}%
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">Est. Impressions:</span>
-                          <span className="font-medium">{formatNumber(Math.round(impressions))}</span>
+                          <span className="text-muted-foreground">
+                            Est. Impressions:
+                          </span>
+                          <span className="font-medium">
+                            {formatNumber(Math.round(impressions))}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">Est. Clicks:</span>
-                          <span className="font-medium">{Math.round(clicks)}</span>
+                          <span className="text-muted-foreground">
+                            Est. Clicks:
+                          </span>
+                          <span className="font-medium">
+                            {Math.round(clicks)}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">Est. Conversions:</span>
-                          <span className="font-medium">{conversions.toFixed(1)}</span>
+                          <span className="text-muted-foreground">
+                            Est. Conversions:
+                          </span>
+                          <span className="font-medium">
+                            {conversions.toFixed(1)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -337,12 +609,12 @@ export default function BudgetPredictions() {
             No predictions available
           </h3>
           <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-            Generate a campaign strategy with a budget to see conversion predictions.
-            Go to the Create page and include a budget in your campaign details.
+            Generate a campaign strategy with a budget to see conversion
+            predictions. Go to the Create page and include a budget in your
+            campaign details.
           </p>
         </div>
       )}
     </div>
   );
 }
-
