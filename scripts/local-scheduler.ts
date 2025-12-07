@@ -16,6 +16,11 @@
  * - Simulates Vercel cron job behavior locally
  */
 
+// Load environment variables from .env file
+// This will automatically load .env from the project root when running via npm run scheduler
+import dotenv from "dotenv";
+dotenv.config();
+
 import { getDuePosts, updatePostStatus } from "../lib/db";
 import { postTweet, uploadMedia } from "../lib/x-api";
 
