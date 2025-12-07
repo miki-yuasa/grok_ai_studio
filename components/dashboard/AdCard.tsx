@@ -32,13 +32,21 @@ interface AdCardProps {
     mediaUrl: string,
     mediaType: "image" | "video"
   ) => void;
-  onPostEdited: (postId: string, content: string, replyContent: string, scheduledTime?: string) => void;
+  onPostEdited: (
+    postId: string,
+    content: string,
+    replyContent: string,
+    scheduledTime?: string
+  ) => void;
   onMediaPromptEdited: (
     postId: string,
     imagePrompt: string,
     videoPrompt: string
   ) => void;
-  onPostStatusChanged?: (postId: string, status: "draft" | "generated" | "posted") => void;
+  onPostStatusChanged?: (
+    postId: string,
+    status: "draft" | "generated" | "posted"
+  ) => void;
 }
 
 export function AdCard({
@@ -67,7 +75,9 @@ export function AdCard({
   const [editedVideoPrompt, setEditedVideoPrompt] = useState(
     post.videoPrompt || post.mediaPrompt
   );
-  const [editedScheduledTime, setEditedScheduledTime] = useState(post.scheduledTime);
+  const [editedScheduledTime, setEditedScheduledTime] = useState(
+    post.scheduledTime
+  );
   const [timeError, setTimeError] = useState("");
 
   // Convert ISO string to datetime-local format
@@ -179,7 +189,12 @@ export function AdCard({
         return; // Don't save if time is invalid
       }
     }
-    onPostEdited(post.id, editedContent, editedReplyContent, editedScheduledTime);
+    onPostEdited(
+      post.id,
+      editedContent,
+      editedReplyContent,
+      editedScheduledTime
+    );
     setIsEditing(false);
     setTimeError("");
   };
@@ -224,7 +239,7 @@ export function AdCard({
       }
 
       const data = await response.json();
-      
+
       // Update post status
       if (onPostStatusChanged) {
         onPostStatusChanged(post.id, "posted");
@@ -554,62 +569,6 @@ export function AdCard({
           )}
         </details>
 
-        {/* Video Prompt Section - Collapsible */}
-        <details className="space-y-2" open={showVideoPrompt}>
-          <summary
-            className="cursor-pointer text-sm font-medium flex items-center gap-2 hover:text-primary"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowVideoPrompt(!showVideoPrompt);
-            }}
-          >
-            <Video className="h-4 w-4" />
-            Video Prompt
-          </summary>
-          {showVideoPrompt && (
-            <div className="space-y-2 pl-6">
-              {isEditingVideoPrompt ? (
-                <>
-                  <Textarea
-                    value={editedVideoPrompt}
-                    onChange={(e) => setEditedVideoPrompt(e.target.value)}
-                    className="text-xs leading-relaxed min-h-[100px] font-mono"
-                    placeholder="Describe the video you want to generate..."
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleCancelVideoPromptEdit}
-                    >
-                      <X className="h-3 w-3 mr-1" />
-                      Cancel
-                    </Button>
-                    <Button size="sm" onClick={handleSaveVideoPrompt}>
-                      <Save className="h-3 w-3 mr-1" />
-                      Save
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-xs p-3 bg-muted rounded-md leading-relaxed font-mono">
-                    {post.videoPrompt || post.mediaPrompt}
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setIsEditingVideoPrompt(true)}
-                  >
-                    <Edit2 className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        </details>
-
         {/* Post to X Button - Bottom */}
         {!isEditing && (
           <div className="flex justify-center pt-4 border-t">
@@ -634,7 +593,10 @@ export function AdCard({
                 )}
               </Button>
             ) : (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-700 border-green-300"
+              >
                 ✓ Posted
               </Badge>
             )}

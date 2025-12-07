@@ -251,40 +251,6 @@ export default function Home() {
     }
   };
 
-  const handlePostEdited = (
-    postId: string,
-    content: string,
-    replyContent: string
-  ) => {
-    if (!strategy) return;
-
-    const updatedPosts = strategy.posts.map((post) =>
-      post.id === postId ? { ...post, content, replyContent } : post
-    );
-
-    setStrategy({
-      ...strategy,
-      posts: updatedPosts,
-    });
-  };
-
-  const handleMediaPromptEdited = (
-    postId: string,
-    imagePrompt: string,
-    videoPrompt: string
-  ) => {
-    if (!strategy) return;
-
-    const updatedPosts = strategy.posts.map((post) =>
-      post.id === postId ? { ...post, imagePrompt, videoPrompt } : post
-    );
-
-    setStrategy({
-      ...strategy,
-      posts: updatedPosts,
-    });
-  };
-
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
