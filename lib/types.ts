@@ -25,6 +25,9 @@ export interface StrategyRequest {
   productUrl: string;
   competitorHandles?: string;
   trendContext?: string;
+  targetMarket?: string;
+  campaignDetails?: string;
+  supplementaryImages?: string[];
 }
 
 export interface ImageGenerationRequest {

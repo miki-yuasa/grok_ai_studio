@@ -66,6 +66,19 @@ export default function Home() {
     });
   };
 
+  const handleMediaPromptEdited = (postId: string, mediaPrompt: string) => {
+    if (!strategy) return;
+
+    const updatedPosts = strategy.posts.map((post) =>
+      post.id === postId ? { ...post, mediaPrompt } : post
+    );
+
+    setStrategy({
+      ...strategy,
+      posts: updatedPosts,
+    });
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -90,6 +103,7 @@ export default function Home() {
             strategy={strategy}
             onMediaGenerated={handleMediaGenerated}
             onPostEdited={handlePostEdited}
+            onMediaPromptEdited={handleMediaPromptEdited}
           />
         </div>
 

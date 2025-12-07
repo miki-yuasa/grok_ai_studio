@@ -14,12 +14,14 @@ interface StrategyGridProps {
   strategy: AdStrategy | null;
   onMediaGenerated: (postId: string, mediaUrl: string) => void;
   onPostEdited: (postId: string, content: string, replyContent: string) => void;
+  onMediaPromptEdited: (postId: string, mediaPrompt: string) => void;
 }
 
 export function StrategyGrid({
   strategy,
   onMediaGenerated,
   onPostEdited,
+  onMediaPromptEdited,
 }: StrategyGridProps) {
   if (!strategy) {
     return (
@@ -65,6 +67,7 @@ export function StrategyGrid({
               post={post}
               onMediaGenerated={onMediaGenerated}
               onPostEdited={onPostEdited}
+              onMediaPromptEdited={onMediaPromptEdited}
             />
           ))}
         </div>

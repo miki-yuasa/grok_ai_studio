@@ -18,20 +18,25 @@ interface AdCardProps {
   post: AdPost;
   onMediaGenerated: (postId: string, mediaUrl: string) => void;
   onPostEdited: (postId: string, content: string, replyContent: string) => void;
+  onMediaPromptEdited: (postId: string, mediaPrompt: string) => void;
 }
 
-export function AdCard({ post, onMediaGenerated, onPostEdited }: AdCardProps) {
+export function AdCard({ post, onMediaGenerated, onPostEdited, onMediaPromptEdited }: AdCardProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
   const [editedReplyContent, setEditedReplyContent] = useState(post.replyContent);
+  const [editedMediaPrompt, setEditedMediaPrompt] = useState(post.mediaPrompt);
 
-  const handleGenerateMedia = async () => {
+  const handleGenerateMedia = async (customPrompt?: string) => {
     setIsGenerating(true);
     setError("");
 
     try {
+      const promptToUse = customPrompt || editedMediaPrompt;
+      
       const endpoint =
         post.mediaType === "image"
           ? "/api/generate-image"
@@ -42,7 +47,7 @@ export function AdCard({ post, onMediaGenerated, onPostEdited }: AdCardProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: post.mediaPrompt }),
+        body: JSON.stringify({ prompt: promptToUse }),
       });
 
       if (!response.ok) {
@@ -53,11 +58,26 @@ export function AdCard({ post, onMediaGenerated, onPostEdited }: AdCardProps) {
       const data = await response.json();
       const mediaUrl = post.mediaType === "image" ? data.url : data.videoUrl;
       onMediaGenerated(post.id, mediaUrl);
+      
+      // Save the edited prompt if it was changed
+      if (editedMediaPrompt !== post.mediaPrompt) {
+        onMediaPromptEdited(post.id, editedMediaPrompt);
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleSavePrompt = () => {
+    onMediaPromptEdited(post.id, editedMediaPrompt);
+    setIsEditingPrompt(false);
+  };
+
+  const handleCancelPromptEdit = () => {
+    setEditedMediaPrompt(post.mediaPrompt);
+    setIsEditingPrompt(false);
   };
 
   const formatDate = (isoString: string) => {
@@ -79,6 +99,12 @@ export function AdCard({ post, onMediaGenerated, onPostEdited }: AdCardProps) {
     setEditedContent(post.content);
     setEditedReplyContent(post.replyContent);
     setIsEditing(false);
+  };
+
+  const handleRegenerateMedia = () => {
+    // Clear existing media and regenerate with current prompt
+    onMediaGenerated(post.id, "");
+    handleGenerateMedia();
   };
 
   return (
@@ -191,22 +217,47 @@ export function AdCard({ post, onMediaGenerated, onPostEdited }: AdCardProps) {
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Visual Asset</h4>
           {post.mediaUrl ? (
-            <div className="rounded-md overflow-hidden border">
-              {post.mediaType === "image" ? (
-                <img
-                  src={post.mediaUrl}
-                  alt="Generated ad visual"
-                  className="w-full h-48 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 bg-muted flex items-center justify-center">
-                  <Video className="h-12 w-12 text-muted-foreground" />
-                </div>
-              )}
+            <div className="space-y-2">
+              <div className="rounded-md overflow-hidden border">
+                {post.mediaType === "image" ? (
+                  <img
+                    src={post.mediaUrl}
+                    alt="Generated ad visual"
+                    className="w-full h-48 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-muted flex items-center justify-center">
+                    <Video className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={handleRegenerateMedia}
+                disabled={isGenerating}
+                className="w-full"
+                variant="outline"
+                size="sm"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    {post.mediaType === "image" ? (
+                      <Image className="mr-2 h-4 w-4" />
+                    ) : (
+                      <Video className="mr-2 h-4 w-4" />
+                    )}
+                    Regenerate {post.mediaType}
+                  </>
+                )}
+              </Button>
             </div>
           ) : (
             <Button
-              onClick={handleGenerateMedia}
+              onClick={() => handleGenerateMedia()}
               disabled={isGenerating}
               className="w-full"
               variant="outline"
@@ -231,15 +282,55 @@ export function AdCard({ post, onMediaGenerated, onPostEdited }: AdCardProps) {
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
 
-        {/* Prompt Preview */}
-        <details className="text-xs">
-          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-            View {post.mediaType} prompt
-          </summary>
-          <p className="mt-2 p-2 bg-muted rounded text-xs">
-            {post.mediaPrompt}
-          </p>
-        </details>
+        {/* Media Prompt Section - Now Editable */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium">
+              {post.mediaType === "image" ? "Image" : "Video"} Prompt
+            </h4>
+            {!isEditingPrompt && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsEditingPrompt(true)}
+              >
+                <Edit2 className="h-3 w-3 mr-1" />
+                Edit
+              </Button>
+            )}
+          </div>
+          {isEditingPrompt ? (
+            <div className="space-y-2">
+              <Textarea
+                value={editedMediaPrompt}
+                onChange={(e) => setEditedMediaPrompt(e.target.value)}
+                className="text-xs leading-relaxed min-h-[100px] font-mono"
+                placeholder="Describe the visual you want to generate..."
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelPromptEdit}
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSavePrompt}
+                >
+                  <Save className="h-3 w-3 mr-1" />
+                  Save Prompt
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs p-3 bg-muted rounded-md leading-relaxed font-mono">
+              {post.mediaPrompt}
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

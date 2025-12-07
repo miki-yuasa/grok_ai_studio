@@ -64,6 +64,22 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
     setError("");
 
     try {
+      // Convert images to base64 for sending
+      const imageData: string[] = [];
+      for (const file of supplementaryImages) {
+        try {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          imageData.push(base64);
+        } catch (err) {
+          console.error("Failed to read image:", file.name, err);
+        }
+      }
+
       const response = await fetch("/api/generate-strategy", {
         method: "POST",
         headers: {
@@ -76,8 +92,8 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
           targetMarket: targetMarket || undefined,
           campaignDetails: campaignDetails || undefined,
           supplementaryImages:
-            supplementaryImages.length > 0
-              ? supplementaryImages.map((f) => f.name)
+            imageData.length > 0
+              ? imageData
               : undefined,
         }),
       });
@@ -129,12 +145,12 @@ export function InputForm({ onStrategyGenerated }: InputFormProps) {
               {showAdvanced ? (
                 <>
                   <ChevronUp className="h-4 w-4" />
-                  Hide Advanced Options
+                  Hide Optional Details
                 </>
               ) : (
                 <>
                   <ChevronDown className="h-4 w-4" />
-                  Show Advanced Options
+                  Show Optional Details
                 </>
               )}
             </Button>

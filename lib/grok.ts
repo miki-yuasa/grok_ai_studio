@@ -31,6 +31,51 @@ export async function generateWithGrok(
 }
 
 /**
+ * Generate text using Grok with vision support (images + text)
+ */
+export async function generateWithGrokVision(
+  systemPrompt: string,
+  userPrompt: string,
+  images: string[] = [],
+  temperature: number = 0.7
+): Promise<string> {
+  // Build content array with images and text
+  const userContent: Array<{
+    type: "text" | "image_url";
+    text?: string;
+    image_url?: { url: string; detail: "high" | "low" | "auto" };
+  }> = [];
+
+  // Add images first
+  for (const imageData of images) {
+    userContent.push({
+      type: "image_url",
+      image_url: {
+        url: imageData, // Already in base64 format from frontend
+        detail: "high",
+      },
+    });
+  }
+
+  // Add text prompt
+  userContent.push({
+    type: "text",
+    text: userPrompt,
+  });
+
+  const completion = await grokClient.chat.completions.create({
+    model: "grok-4",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userContent as any },
+    ],
+    temperature,
+  });
+
+  return completion.choices[0]?.message?.content || "";
+}
+
+/**
  * Generate image using Grok Imagine API
  * Uses high quality for best ad results
  */
